@@ -1,0 +1,284 @@
+"use client";
+
+import { fetchWithTimeout } from '@/utils/fetchWithTimeout';
+
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import {
+  Search,
+  ArrowUpDown,
+  UserRound,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  ShieldCheck,
+} from "lucide-react";
+import AdminGuard from "@/components/AdminGuard";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+
+async function safeParseResponse(res: Response) {
+  const contentType = res.headers.get("content-type") || "";
+  const rawText = await res.text();
+
+  if (!rawText) return null;
+
+  if (contentType.includes("application/json")) {
+    try {
+      return JSON.parse(rawText);
+    } catch {
+      throw new Error("Server returned invalid JSON response.");
+    }
+  }
+
+  try {
+    return JSON.parse(rawText);
+  } catch {
+    throw new Error("Unexpected server response received.");
+  }
+}
+
+export default function AdminPatientsPage() {
+  const router = useRouter();
+  const [records, setRecords] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<"recent" | "old">("recent");
+  const [error, setError] = useState("");
+
+  const fetchPatients = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      
+      
+
+      const res = await fetchWithTimeout(`${API_BASE}/api/admin/patients`, {
+        credentials: "include",
+      });
+      const data = await safeParseResponse(res);
+
+      if (res.status === 401) {
+        // Prevents wiping unrelated app data (e.g. theme prefs) on session expiry
+        ["token", "role", "userId"].forEach((k) => localStorage.removeItem(k));
+        router.push("/login");
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error(data?.message || "Failed to fetch patient records");
+      }
+
+      const list = Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data)
+        ? data
+        : [];
+
+      setRecords(list);
+    } catch (err: any) {
+      setError(err.message || "Unable to load patient records.");
+      setRecords([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPatients();
+  }, []);
+
+  const filteredRecords = useMemo(() => {
+    let result = [...records];
+
+    if (searchQuery.trim()) {
+      result = result.filter(
+        (item) =>
+          item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.location?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    result.sort((a, b) => {
+      const aTime = new Date(a.createdAt || 0).getTime();
+      const bTime = new Date(b.createdAt || 0).getTime();
+      return sortOrder === "recent" ? bTime - aTime : aTime - bTime;
+    });
+
+    return result;
+  }, [records, searchQuery, sortOrder]);
+
+  return (
+    <AdminGuard>
+      <DashboardLayout>
+        <div className="min-h-screen p-6 lg:p-10">
+          <div className="max-w-6xl mx-auto space-y-8">
+            <div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-50 text-teal-700 border border-teal-100 text-sm font-semibold mb-3">
+                <ShieldCheck className="w-4 h-4" />
+                Admin Patient Records
+              </div>
+              <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
+                Patient Records
+              </h1>
+              <p className="text-slate-500 font-medium mt-2">
+                View registered patient accounts on CareConnect.
+              </p>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl border border-slate-200">
+              <div className="relative w-full md:w-96">
+                <Search
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  size={18}
+                />
+                <input
+                  type="text"
+                  placeholder="Search by name, email or location..."
+                  className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-xl outline-none focus:ring-2 focus:ring-teal-500"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="flex items-center gap-2 text-sm font-bold text-slate-600 bg-slate-50 p-1 rounded-xl">
+                <button
+                  onClick={() => setSortOrder("recent")}
+                  className={`px-4 py-2 rounded-lg transition-all ${
+                    sortOrder === "recent"
+                      ? "bg-white shadow-sm text-teal-600"
+                      : "hover:text-slate-900"
+                  }`}
+                >
+                  Newest
+                </button>
+                <button
+                  onClick={() => setSortOrder("old")}
+                  className={`px-4 py-2 rounded-lg transition-all ${
+                    sortOrder === "old"
+                      ? "bg-white shadow-sm text-teal-600"
+                      : "hover:text-slate-900"
+                  }`}
+                >
+                  Oldest
+                </button>
+                <ArrowUpDown size={16} className="mx-2 text-slate-400" />
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center text-slate-400">
+                Loading patient records...
+              </div>
+            ) : error ? (
+              <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-2xl">
+                {error}
+              </div>
+            ) : filteredRecords.length === 0 ? (
+              <div className="bg-white p-12 rounded-3xl border border-dashed border-slate-300 text-center text-slate-500">
+                No patient records found.
+              </div>
+            ) : (
+              <div className="grid gap-5">
+                {filteredRecords.map((patient, index) => (
+                  <motion.div
+                    key={patient._id}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.03 }}
+                    className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm"
+                  >
+                    <div className="flex flex-col lg:flex-row gap-6">
+                      <div className="w-24 h-24 rounded-2xl overflow-hidden bg-slate-100 shrink-0">
+                        <img
+                          src={
+                            patient.photo
+                              ? `${API_BASE}/${patient.photo}`
+                              : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                  patient.name || "Patient"
+                                )}&background=e2e8f0&color=0f172a&size=256`
+                          }
+                          alt={patient.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+
+                      <div className="flex-1 grid md:grid-cols-2 gap-4">
+                        <div>
+                          <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+                            <UserRound className="w-4 h-4 text-teal-600" />
+                            Full Name
+                          </div>
+                          <p className="font-semibold text-slate-900">
+                            {patient.name || "Not available"}
+                          </p>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+                            <Mail className="w-4 h-4 text-teal-600" />
+                            Email
+                          </div>
+                          <p className="font-semibold text-slate-900 break-all">
+                            {patient.email || "Not available"}
+                          </p>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+                            <Phone className="w-4 h-4 text-teal-600" />
+                            Phone
+                          </div>
+                          <p className="font-semibold text-slate-900">
+                            {patient.phone || "Not available"}
+                          </p>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+                            <MapPin className="w-4 h-4 text-teal-600" />
+                            Location
+                          </div>
+                          <p className="font-semibold text-slate-900">
+                            {patient.location || "Not available"}
+                          </p>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+                            <ShieldCheck className="w-4 h-4 text-teal-600" />
+                            Role
+                          </div>
+                          <p className="font-semibold text-slate-900 capitalize">
+                            {patient.role || "patient"}
+                          </p>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+                            <Calendar className="w-4 h-4 text-teal-600" />
+                            Joined
+                          </div>
+                          <p className="font-semibold text-slate-900">
+                            {patient.createdAt
+                              ? new Date(patient.createdAt).toLocaleDateString()
+                              : "Not available"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </DashboardLayout>
+    </AdminGuard>
+  );
+}

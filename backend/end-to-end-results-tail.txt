@@ -1,0 +1,52 @@
+﻿--- PHASE 1: CREATE USERS
+Create Demo Nurse Priya: FAIL { success: false, error: 'User already exists' }
+Create Demo Patient Raj: FAIL { success: false, error: 'User already exists' }
+Create Demo Care Assistant Amit: FAIL { success: false, error: 'User already exists' }
+Create Demo Nurse Sunita: FAIL { success: false, error: 'User already exists' }
+
+--- PHASE 2: ADMIN
+Admin Login: PASS
+Fetch pending nurses: PASS 0
+Fetch pending CA: PASS 0
+Admin stats: PASS {
+  success: true,
+  data: {
+    totalPatients: 3,
+    totalNurses: 3,
+    totalCareAssistants: 2,
+    pendingNurses: 0,
+    approvedNurses: 3,
+    rejectedNurses: 0,
+    pendingCareAssistants: 0,
+    approvedCareAssistants: 2,
+    totalBookings: 2,
+    activeBookings: 2,
+    completedBookings: 0,
+    totalPayments: 2,
+    totalRevenue: 0
+  }
+}
+
+--- PHASE 3: NURSE
+Nurse Login: FAIL
+Save services: FAIL { success: false, message: 'Authorization token missing' }
+Save service prices: FAIL { success: false, message: 'Authorization token missing' }
+Save availability: FAIL { success: false, message: 'Authorization token missing' }
+
+--- PHASE 4: PATIENT
+Patient Login: FAIL
+Browse nurses: PASS count: 2
+Create booking: FAIL { success: false, message: 'Authorization token missing' }
+Create payment: FAIL { success: false, message: 'Authorization token missing' }
+Fetch patient reports: FAIL { success: false, message: 'Authorization token missing' }
+Fetch patient bookings: FAIL
+Fetch patient payments: FAIL { success: false, message: 'Authorization token missing' }
+
+--- PHASE 5: NURSE WORKFLOW
+Fetch nurse bookings: FAIL size undefined
+Nurse payments: FAIL { success: false, message: 'Authorization token missing' }
+
+--- PHASE 6: CARE ASSISTANT
+Create CA request (Patient): FAIL { success: false, message: 'Authorization token missing' }
+CA open requests: FAIL count: undefined
+Patient CA requests: FAIL count undefined

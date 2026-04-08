@@ -1,0 +1,468 @@
+﻿--- PHASE 1: CREATE USERS
+Create Demo Nurse Priya: PASS {
+  success: true,
+  data: {
+    user: {
+      _id: '69d291c83cf815f79c0c6e07',
+      id: '69d291c83cf815f79c0c6e07',
+      name: 'Demo Nurse Priya',
+      email: 'nurse@demo.com',
+      phone: '9876543210',
+      location: 'Mumbai',
+      role: 'nurse',
+      isApproved: false,
+      verificationStatus: 'pending',
+      rejectionReason: '',
+      qualification: 'BSc Nursing',
+      experience: 5,
+      registrationNumber: 'MH-NURSE-2024',
+      specialization: '',
+      bio: '',
+      services: [],
+      servicePrices: {},
+      availability: [Object],
+      photo: '',
+      idProof: '',
+      licenseProof: '',
+      createdAt: '2026-04-05T16:46:00.190Z',
+      updatedAt: '2026-04-05T16:46:00.190Z'
+    }
+  },
+  message: 'User registered successfully'
+}
+Create Demo Patient Raj: PASS {
+  success: true,
+  data: {
+    user: {
+      _id: '69d291cd3cf815f79c0c6e0a',
+      id: '69d291cd3cf815f79c0c6e0a',
+      name: 'Demo Patient Raj',
+      email: 'patient@demo.com',
+      phone: '9876543211',
+      location: 'Mumbai',
+      role: 'patient',
+      isApproved: true,
+      verificationStatus: null,
+      rejectionReason: '',
+      qualification: '',
+      experience: 0,
+      registrationNumber: '',
+      specialization: '',
+      bio: '',
+      services: [],
+      servicePrices: {},
+      availability: [Object],
+      photo: '',
+      idProof: '',
+      licenseProof: '',
+      createdAt: '2026-04-05T16:46:05.126Z',
+      updatedAt: '2026-04-05T16:46:05.126Z'
+    }
+  },
+  message: 'User registered successfully'
+}
+Create Demo Care Assistant Amit: PASS {
+  success: true,
+  data: {
+    user: {
+      _id: '69d291d53cf815f79c0c6e0d',
+      id: '69d291d53cf815f79c0c6e0d',
+      name: 'Demo Care Assistant Amit',
+      email: 'assistant@demo.com',
+      phone: '9876543212',
+      location: 'Mumbai',
+      role: 'care_assistant',
+      isApproved: false,
+      verificationStatus: 'pending',
+      rejectionReason: '',
+      qualification: 'Diploma in Healthcare',
+      experience: 3,
+      registrationNumber: 'MH-CA-2024',
+      specialization: '',
+      bio: '',
+      services: [],
+      servicePrices: {},
+      availability: [Object],
+      photo: '',
+      idProof: '',
+      licenseProof: '',
+      createdAt: '2026-04-05T16:46:13.201Z',
+      updatedAt: '2026-04-05T16:46:13.201Z'
+    }
+  },
+  message: 'User registered successfully'
+}
+Create Demo Nurse Sunita: PASS {
+  success: true,
+  data: {
+    user: {
+      _id: '69d291da3cf815f79c0c6e10',
+      id: '69d291da3cf815f79c0c6e10',
+      name: 'Demo Nurse Sunita',
+      email: 'nurse2@demo.com',
+      phone: '9876543213',
+      location: 'Mumbai',
+      role: 'nurse',
+      isApproved: false,
+      verificationStatus: 'pending',
+      rejectionReason: '',
+      qualification: 'GNM Nursing',
+      experience: 8,
+      registrationNumber: 'MH-NURSE-2025',
+      specialization: '',
+      bio: '',
+      services: [],
+      servicePrices: {},
+      availability: [Object],
+      photo: '',
+      idProof: '',
+      licenseProof: '',
+      createdAt: '2026-04-05T16:46:18.695Z',
+      updatedAt: '2026-04-05T16:46:18.695Z'
+    }
+  },
+  message: 'User registered successfully'
+}
+
+--- PHASE 2: ADMIN
+Admin Login: PASS
+Fetch pending nurses: PASS 2
+Approve nurse 69d291da3cf815f79c0c6e10: PASS
+Approve nurse 69d291c83cf815f79c0c6e07: PASS
+Fetch pending CA: PASS 1
+Approve CA 69d291d53cf815f79c0c6e0d: PASS
+Admin stats: PASS {
+  success: true,
+  data: {
+    totalPatients: 3,
+    totalNurses: 3,
+    totalCareAssistants: 2,
+    pendingNurses: 0,
+    approvedNurses: 3,
+    rejectedNurses: 0,
+    pendingCareAssistants: 0,
+    approvedCareAssistants: 2,
+    totalBookings: 2,
+    activeBookings: 2,
+    completedBookings: 0,
+    totalPayments: 2,
+    totalRevenue: 0
+  }
+}
+
+--- PHASE 3: NURSE
+Nurse Login: PASS
+Save services: PASS {
+  success: true,
+  message: 'Services updated successfully',
+  services: [
+    'Blood Pressure Monitoring',
+    'Blood Sugar Check',
+    'Wound Dressing',
+    'Injection (IV / IM)',
+    'Temperature Check'
+  ],
+  user: {
+    _id: '69d291c83cf815f79c0c6e07',
+    id: '69d291c83cf815f79c0c6e07',
+    name: 'Demo Nurse Priya',
+    email: 'nurse@demo.com',
+    phone: '9876543210',
+    location: 'Mumbai',
+    role: 'nurse',
+    isApproved: true,
+    verificationStatus: 'approved',
+    rejectionReason: '',
+    qualification: 'BSc Nursing',
+    experience: 5,
+    registrationNumber: 'MH-NURSE-2024',
+    specialization: '',
+    bio: '',
+    services: [
+      'Blood Pressure Monitoring',
+      'Blood Sugar Check',
+      'Wound Dressing',
+      'Injection (IV / IM)',
+      'Temperature Check'
+    ],
+    servicePrices: {},
+    availability: {
+      availableDays: [],
+      startTime: '',
+      endTime: '',
+      slotDuration: 30,
+      isAvailableForBooking: true
+    },
+    photo: '',
+    idProof: '',
+    licenseProof: '',
+    createdAt: '2026-04-05T16:46:00.190Z',
+    updatedAt: '2026-04-05T16:47:39.361Z'
+  }
+}
+Save service prices: PASS {
+  success: true,
+  message: 'Service prices saved successfully',
+  servicePrices: {
+    'Blood Pressure Monitoring': 500,
+    'Blood Sugar Check': 400,
+    'Wound Dressing': 800,
+    'Injection (IV / IM)': 600,
+    'Temperature Check': 300
+  },
+  user: {
+    _id: '69d291c83cf815f79c0c6e07',
+    id: '69d291c83cf815f79c0c6e07',
+    name: 'Demo Nurse Priya',
+    email: 'nurse@demo.com',
+    phone: '9876543210',
+    location: 'Mumbai',
+    role: 'nurse',
+    isApproved: true,
+    verificationStatus: 'approved',
+    rejectionReason: '',
+    qualification: 'BSc Nursing',
+    experience: 5,
+    registrationNumber: 'MH-NURSE-2024',
+    specialization: '',
+    bio: '',
+    services: [
+      'Blood Pressure Monitoring',
+      'Blood Sugar Check',
+      'Wound Dressing',
+      'Injection (IV / IM)',
+      'Temperature Check'
+    ],
+    servicePrices: {
+      'Blood Pressure Monitoring': 500,
+      'Blood Sugar Check': 400,
+      'Wound Dressing': 800,
+      'Injection (IV / IM)': 600,
+      'Temperature Check': 300
+    },
+    availability: {
+      availableDays: [],
+      startTime: '',
+      endTime: '',
+      slotDuration: 30,
+      isAvailableForBooking: true
+    },
+    photo: '',
+    idProof: '',
+    licenseProof: '',
+    createdAt: '2026-04-05T16:46:00.190Z',
+    updatedAt: '2026-04-05T16:47:39.678Z'
+  }
+}
+Save availability: PASS {
+  success: true,
+  message: 'Availability saved successfully',
+  availability: {
+    availableDays: [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday' ],
+    startTime: '09:00',
+    endTime: '18:00',
+    slotDuration: 60,
+    isAvailableForBooking: true
+  },
+  user: {
+    _id: '69d291c83cf815f79c0c6e07',
+    id: '69d291c83cf815f79c0c6e07',
+    name: 'Demo Nurse Priya',
+    email: 'nurse@demo.com',
+    phone: '9876543210',
+    location: 'Mumbai',
+    role: 'nurse',
+    isApproved: true,
+    verificationStatus: 'approved',
+    rejectionReason: '',
+    qualification: 'BSc Nursing',
+    experience: 5,
+    registrationNumber: 'MH-NURSE-2024',
+    specialization: '',
+    bio: '',
+    services: [
+      'Blood Pressure Monitoring',
+      'Blood Sugar Check',
+      'Wound Dressing',
+      'Injection (IV / IM)',
+      'Temperature Check'
+    ],
+    servicePrices: {
+      'Blood Pressure Monitoring': 500,
+      'Blood Sugar Check': 400,
+      'Wound Dressing': 800,
+      'Injection (IV / IM)': 600,
+      'Temperature Check': 300
+    },
+    availability: {
+      availableDays: [Array],
+      startTime: '09:00',
+      endTime: '18:00',
+      slotDuration: 60,
+      isAvailableForBooking: true
+    },
+    photo: '',
+    idProof: '',
+    licenseProof: '',
+    createdAt: '2026-04-05T16:46:00.190Z',
+    updatedAt: '2026-04-05T16:47:40.133Z'
+  }
+}
+
+--- PHASE 4: PATIENT
+Patient Login: PASS
+Browse nurses: PASS count: 2
+Create booking: FAIL { success: false, error: 'Server error' }
+Create payment: FAIL {
+  success: false,
+  error: 'bookingId, amount, and nurseId are required'
+}
+Fetch patient reports: PASS {
+  success: true,
+  data: [],
+  pagination: { page: 1, limit: 10, total: 0, pages: 0 }
+}
+Fetch patient bookings: PASS
+Fetch patient payments: PASS {
+  success: true,
+  message: 'Patient payments fetched successfully',
+  data: [],
+  pagination: { page: 1, limit: 10, total: 0, pages: 0 }
+}
+
+--- PHASE 5: NURSE WORKFLOW
+Fetch nurse bookings: PASS size 0
+Nurse payments: PASS {
+  success: true,
+  message: 'Nurse payments fetched successfully',
+  data: [],
+  pagination: { page: 1, limit: 10, total: 0, pages: 0 }
+}
+
+--- PHASE 6: CARE ASSISTANT
+Create CA request (Patient): PASS {
+  success: true,
+  data: {
+    _id: '69d292313cf815f79c0c6e5e',
+    patient: '69d291cd3cf815f79c0c6e0a',
+    careAssistant: null,
+    requestType: 'doctor_visit',
+    scheduledDate: '2026-04-11',
+    scheduledTime: '11:00',
+    pickupLocation: 'Andheri East, Mumbai',
+    destination: 'Kokilaben Hospital',
+    notes: 'Wheelchair assistance',
+    status: 'pending',
+    createdAt: '2026-04-05T16:47:45.931Z',
+    updatedAt: '2026-04-05T16:47:45.931Z'
+  },
+  message: 'Care assistant request created successfully'
+}
+CA open requests: PASS count: 1
+CA accept request: PASS {
+  success: true,
+  data: {
+    _id: '69d292313cf815f79c0c6e5e',
+    patient: {
+      _id: '69d291cd3cf815f79c0c6e0a',
+      name: 'Demo Patient Raj',
+      email: 'patient@demo.com',
+      phone: '9876543211',
+      location: 'Mumbai',
+      photo: ''
+    },
+    careAssistant: {
+      _id: '69d291d53cf815f79c0c6e0d',
+      name: 'Demo Care Assistant Amit',
+      email: 'assistant@demo.com',
+      phone: '9876543212',
+      location: 'Mumbai',
+      role: 'care_assistant',
+      photo: ''
+    },
+    requestType: 'doctor_visit',
+    scheduledDate: '2026-04-11',
+    scheduledTime: '11:00',
+    pickupLocation: 'Andheri East, Mumbai',
+    destination: 'Kokilaben Hospital',
+    notes: 'Wheelchair assistance',
+    status: 'accepted',
+    createdAt: '2026-04-05T16:47:45.931Z',
+    updatedAt: '2026-04-05T16:47:59.140Z',
+    __v: 0
+  },
+  message: 'Request accepted successfully'
+}
+CA status in_progress: PASS {
+  success: true,
+  data: {
+    _id: '69d292313cf815f79c0c6e5e',
+    patient: {
+      _id: '69d291cd3cf815f79c0c6e0a',
+      name: 'Demo Patient Raj',
+      email: 'patient@demo.com',
+      phone: '9876543211',
+      location: 'Mumbai',
+      photo: ''
+    },
+    careAssistant: {
+      _id: '69d291d53cf815f79c0c6e0d',
+      name: 'Demo Care Assistant Amit',
+      email: 'assistant@demo.com',
+      phone: '9876543212',
+      location: 'Mumbai',
+      role: 'care_assistant',
+      photo: ''
+    },
+    requestType: 'doctor_visit',
+    scheduledDate: '2026-04-11',
+    scheduledTime: '11:00',
+    pickupLocation: 'Andheri East, Mumbai',
+    destination: 'Kokilaben Hospital',
+    notes: 'Wheelchair assistance',
+    status: 'in_progress',
+    createdAt: '2026-04-05T16:47:45.931Z',
+    updatedAt: '2026-04-05T16:48:07.310Z',
+    __v: 0
+  },
+  message: 'Request marked as in_progress'
+}
+CA status completed: PASS {
+  success: true,
+  data: {
+    _id: '69d292313cf815f79c0c6e5e',
+    patient: {
+      _id: '69d291cd3cf815f79c0c6e0a',
+      name: 'Demo Patient Raj',
+      email: 'patient@demo.com',
+      phone: '9876543211',
+      location: 'Mumbai',
+      photo: ''
+    },
+    careAssistant: {
+      _id: '69d291d53cf815f79c0c6e0d',
+      name: 'Demo Care Assistant Amit',
+      email: 'assistant@demo.com',
+      phone: '9876543212',
+      location: 'Mumbai',
+      role: 'care_assistant',
+      photo: ''
+    },
+    requestType: 'doctor_visit',
+    scheduledDate: '2026-04-11',
+    scheduledTime: '11:00',
+    pickupLocation: 'Andheri East, Mumbai',
+    destination: 'Kokilaben Hospital',
+    notes: 'Wheelchair assistance',
+    status: 'completed',
+    createdAt: '2026-04-05T16:47:45.931Z',
+    updatedAt: '2026-04-05T16:48:15.890Z',
+    __v: 0
+  },
+  message: 'Request marked as completed'
+}
+CA invalid transition test (expect FAIL): PASS {
+  success: false,
+  error: "Cannot transition request from 'completed' to 'cancelled'"
+}
+Patient CA requests: PASS count 1
