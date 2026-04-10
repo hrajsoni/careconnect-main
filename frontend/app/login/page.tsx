@@ -89,6 +89,7 @@ export default function LoginPage() {
     try {
       const res = await fetchWithTimeout(`${API_BASE}/api/auth/login`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });

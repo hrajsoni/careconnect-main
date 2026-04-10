@@ -124,7 +124,6 @@ router.put(
           ? Number(experience)
           : user.experience;
       user.registrationNumber = registrationNumber ?? user.registrationNumber;
-      user.verificationStatus = "pending";
       user.rejectionReason = "";
       user.isApproved = false;
 
@@ -209,6 +208,10 @@ router.post(
       if (req.files?.licenseProof) {
         user.licenseProof = req.files.licenseProof[0].path.replace(/\\/g, "/");
       }
+
+      user.verificationStatus = "pending";
+      user.rejectionReason = "";
+      user.isApproved = false;
 
       await user.save();
 

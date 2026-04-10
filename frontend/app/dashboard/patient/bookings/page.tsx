@@ -23,6 +23,7 @@ import AuthGuard from "@/components/AuthGuard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/Modal";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
@@ -111,8 +112,7 @@ export default function PatientBookingsPage() {
       });
       
       if (res.status === 401) {
-        localStorage.removeItem("role");
-        localStorage.removeItem("userId");
+        clearStoredAuth();
         router.push("/login");
         return;
       }
@@ -180,14 +180,13 @@ export default function PatientBookingsPage() {
       const paymentRes = await fetchWithTimeout(`${API_BASE}/api/payments/booking/${bookingId}`, {
         credentials: "include",
       });
-      const paymentData = await safeParseResponse(paymentRes);
       
       if (paymentRes.status === 401) {
-        localStorage.removeItem("role");
-        localStorage.removeItem("userId");
+        clearStoredAuth();
         router.push("/login");
         return;
       }
+      const paymentData = await safeParseResponse(paymentRes);
 
       if (!paymentRes.ok) {
         throw new Error(paymentData?.message || "Payment record not found");
@@ -209,6 +208,12 @@ export default function PatientBookingsPage() {
           }),
         }
       );
+
+      if (markPaidRes.status === 401) {
+        clearStoredAuth();
+        router.push("/login");
+        return;
+      }
 
       const markPaidData = await safeParseResponse(markPaidRes);
 
@@ -257,14 +262,12 @@ export default function PatientBookingsPage() {
         body: JSON.stringify(editForm),
       });
 
-      const data = await safeParseResponse(res);
-
       if (res.status === 401) {
-        localStorage.removeItem("role");
-        localStorage.removeItem("userId");
+        clearStoredAuth();
         router.push("/login");
         return;
       }
+      const data = await safeParseResponse(res);
 
       if (!res.ok) {
         throw new Error(data?.message || "Unable to update booking");
@@ -299,14 +302,12 @@ export default function PatientBookingsPage() {
         credentials: "include",
       });
 
-      const data = await safeParseResponse(res);
-
       if (res.status === 401) {
-        localStorage.removeItem("role");
-        localStorage.removeItem("userId");
+        clearStoredAuth();
         router.push("/login");
         return;
       }
+      const data = await safeParseResponse(res);
 
       if (!res.ok) {
         throw new Error(data?.message || "Unable to cancel booking");

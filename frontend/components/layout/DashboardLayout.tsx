@@ -1,7 +1,5 @@
 "use client";
 
-import { fetchWithTimeout } from '@/utils/fetchWithTimeout';
-
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -18,9 +16,9 @@ import {
   CreditCard,
   HeartHandshake,
   Car,
-  ShieldCheck,
 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
@@ -35,8 +33,6 @@ export default function DashboardLayout({
   const [role, setRole] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  // FIXED: Added loading state to prevent double-clicks during logout
   const [logoutLoading, setLogoutLoading] = useState(false);
 
   useEffect(() => {
@@ -89,7 +85,6 @@ export default function DashboardLayout({
         path: "/dashboard/admin/care-assistant-requests",
         role: "admin",
       },
-
       {
         label: "Nurse Dashboard",
         icon: UserCheck,
@@ -126,7 +121,6 @@ export default function DashboardLayout({
         path: "/dashboard/nurse/payments",
         role: "nurse",
       },
-
       {
         label: "Patient Dashboard",
         icon: Users,
@@ -163,7 +157,6 @@ export default function DashboardLayout({
         path: "/dashboard/patient/payments",
         role: "patient",
       },
-
       {
         label: "Care Assistant Dashboard",
         icon: HeartHandshake,
@@ -194,46 +187,17 @@ export default function DashboardLayout({
 
   const menuItems = allMenuItems.filter((item) => item.role === role);
 
-  // ============================================================
-  // FIXED: Logout now properly clears HTTPOnly cookie + localStorage
-  //
-  // Previously: localStorage.clear() — wiped ALL data including
-  // theme preferences, and could NOT clear the HTTPOnly cookie
-  // (JS has no access to HttpOnly cookies by design)
-  //
-  // Now:
-  // 1. Calls POST /api/auth/logout — backend clears the cookie
-  //    via Set-Cookie header (the only way to clear HttpOnly cookies)
-  // 2. Removes only auth-related localStorage keys
-  //    (preserves theme, language, or any other app preferences)
-  // 3. Redirects to login using router.push (not window.location)
-  // ============================================================
   const handleLogout = async () => {
-    if (logoutLoading) return; // Prevent double-clicks
+    if (logoutLoading) return;
     setLogoutLoading(true);
-
     try {
-      await fetchWithTimeout(`${API_BASE}/api/auth/logout`, {
+      await fetch(`${API_BASE}/api/auth/logout`, {
         method: "POST",
-        credentials: "include", // Required to send the cookie for clearing
+        credentials: "include",
       });
-    } catch {
-      // Even if the logout API call fails, still clear local state
-      // and redirect — user should always be able to log out
-    } finally {
-      // ============================================================
-      // FIXED: Selective removal instead of localStorage.clear()
-      // Only remove auth-related keys — preserve any other app data
-      // ============================================================
-      localStorage.removeItem("role");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("name");
-      localStorage.removeItem("verificationStatus");
-      localStorage.removeItem("rejectionReason");
-
-      setLogoutLoading(false);
-      router.push("/login");
-    }
+    } catch (e) {}
+    clearStoredAuth();
+    router.push("/login");
   };
 
   if (!mounted) return null;
@@ -285,8 +249,8 @@ export default function DashboardLayout({
 
       <div className="mt-auto pt-10">
         <motion.button
-          whileHover={{ scale: 1.01, x: 3 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: logoutLoading ? 1 : 1.01, x: logoutLoading ? 0 : 3 }}
+          whileTap={{ scale: logoutLoading ? 1 : 0.98 }}
           className="w-full flex items-center gap-3 p-3 rounded-xl text-red-500 hover:bg-red-50 transition text-left disabled:opacity-50"
           onClick={handleLogout}
           disabled={logoutLoading}

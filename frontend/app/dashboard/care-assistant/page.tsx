@@ -22,6 +22,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import AuthGuard from "@/components/AuthGuard";
 import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
@@ -78,14 +79,14 @@ export default function CareAssistantDashboard() {
       const res = await fetchWithTimeout(`${API_BASE}/api/auth/user/${userId}`, { 
         credentials: "include" 
       });
-      const data = await safeParseResponse(res);
 
       if (res.status === 401) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
+        clearStoredAuth();
         router.push("/login");
         return;
       }
+
+      const data = await safeParseResponse(res);
 
       if (!res.ok) {
         throw new Error(data?.message || "Failed to load profile");

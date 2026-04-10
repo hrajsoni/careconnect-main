@@ -23,6 +23,7 @@ import {
   CalendarClock,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
@@ -265,6 +266,12 @@ export default function NurseDetailPage() {
           notes: bookingData.notes,
         }),
       });
+
+      if (res.status === 401) {
+        clearStoredAuth();
+        router.push("/login");
+        return;
+      }
 
       const data = await safeParseResponse(res);
 

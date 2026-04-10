@@ -22,6 +22,7 @@ import {
 import AdminGuard from "@/components/AdminGuard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Button from "@/components/ui/Button";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
@@ -67,8 +68,7 @@ export default function AdminBookingsPage() {
       });
 
       if (res.status === 401) {
-        // Prevents wiping unrelated app data (e.g. theme prefs) on session expiry
-        ["token", "role", "userId"].forEach((k) => localStorage.removeItem(k));
+        clearStoredAuth();
         router.push("/login");
         return [];
       }
@@ -104,8 +104,7 @@ export default function AdminBookingsPage() {
       });
 
       if (res.status === 401) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
+        clearStoredAuth();
         router.push("/login");
         return;
       }

@@ -20,6 +20,7 @@ import AdminGuard from "@/components/AdminGuard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Modal from "@/components/Modal";
 import Button from "@/components/ui/Button";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
@@ -43,21 +44,6 @@ async function safeParseResponse(res: Response) {
     throw new Error("Unexpected server response received.");
   }
 }
-
-// ============================================================
-// FIXED: Centralized 401 handler
-// Previously: localStorage.removeItem("token") +
-//             localStorage.removeItem("role") + router.replace
-// Now: removes all auth keys selectively, uses router
-// ============================================================
-const handleUnauthorized = (router: ReturnType<typeof useRouter>) => {
-  localStorage.removeItem("role");
-  localStorage.removeItem("userId");
-  localStorage.removeItem("name");
-  localStorage.removeItem("verificationStatus");
-  localStorage.removeItem("rejectionReason");
-  router.replace("/login");
-};
 
 interface Provider {
   _id: string;
@@ -110,17 +96,13 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
 
-      // ============================================================
-      // FIXED: Removed localStorage.getItem("token") check
-      // Cookie is sent automatically via credentials:"include"
-      // If not authenticated, server returns 401 handled below
-      // ============================================================
       const res = await fetchWithTimeout(`${API_BASE}/api/admin/stats`, {
         credentials: "include",
       });
 
       if (res.status === 401) {
-        handleUnauthorized(router);
+        clearStoredAuth();
+        router.push("/login");
         return;
       }
 
@@ -132,14 +114,14 @@ export default function AdminDashboard() {
 
       setStats(data?.data || {});
 
-      // FIXED: All subsequent fetches use cookie auth
       const nursesRes = await fetchWithTimeout(
         `${API_BASE}/api/admin/nurses?status=pending`,
         { credentials: "include" }
       );
 
       if (nursesRes.status === 401) {
-        handleUnauthorized(router);
+        clearStoredAuth();
+        router.push("/login");
         return;
       }
 
@@ -154,7 +136,8 @@ export default function AdminDashboard() {
       );
 
       if (assistantsRes.status === 401) {
-        handleUnauthorized(router);
+        clearStoredAuth();
+        router.push("/login");
         return;
       }
 
@@ -219,14 +202,14 @@ export default function AdminDashboard() {
     setProcessingId(id);
 
     try {
-      // FIXED: Cookie auth
       const res = await fetchWithTimeout(`${API_BASE}/api/admin/approve/${id}`, {
         method: "PUT",
         credentials: "include",
       });
 
       if (res.status === 401) {
-        handleUnauthorized(router);
+        clearStoredAuth();
+        router.push("/login");
         return;
       }
 
@@ -266,7 +249,6 @@ export default function AdminDashboard() {
     setProcessingId(selectedProvider._id);
 
     try {
-      // FIXED: Cookie auth
       const res = await fetchWithTimeout(
         `${API_BASE}/api/admin/reject/${selectedProvider._id}`,
         {
@@ -280,7 +262,8 @@ export default function AdminDashboard() {
       );
 
       if (res.status === 401) {
-        handleUnauthorized(router);
+        clearStoredAuth();
+        router.push("/login");
         return;
       }
 

@@ -20,6 +20,7 @@ import {
 import AdminGuard from "@/components/AdminGuard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Button from "@/components/ui/Button";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
@@ -66,8 +67,7 @@ export default function AdminCareAssistantRequestsPage() {
       });
 
       if (res.status === 401) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
+        clearStoredAuth();
         router.push("/login");
         return;
       }

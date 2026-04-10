@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import AdminGuard from "@/components/AdminGuard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
@@ -60,14 +61,14 @@ export default function AdminPatientsPage() {
       const res = await fetchWithTimeout(`${API_BASE}/api/admin/patients`, {
         credentials: "include",
       });
-      const data = await safeParseResponse(res);
 
       if (res.status === 401) {
-        // Prevents wiping unrelated app data (e.g. theme prefs) on session expiry
-        ["token", "role", "userId"].forEach((k) => localStorage.removeItem(k));
+        clearStoredAuth();
         router.push("/login");
         return;
       }
+
+      const data = await safeParseResponse(res);
 
       if (!res.ok) {
         throw new Error(data?.message || "Failed to fetch patient records");

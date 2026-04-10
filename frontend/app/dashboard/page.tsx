@@ -17,6 +17,7 @@ import AuthGuard from "@/components/AuthGuard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
+import { clearStoredAuth } from "@/utils/session";
 
 export default function PatientDashboard() {
   const router = useRouter();
@@ -25,23 +26,53 @@ export default function PatientDashboard() {
 
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
+  async function safeParseResponse(res: Response) {
+    const contentType = res.headers.get("content-type") || "";
+    const rawText = await res.text();
+
+    if (!rawText) return null;
+
+    if (contentType.includes("application/json")) {
+      try {
+        return JSON.parse(rawText);
+      } catch {
+        throw new Error("Server returned invalid JSON response.");
+      }
+    }
+
+    try {
+      return JSON.parse(rawText);
+    } catch {
+      throw new Error("Unexpected server response received.");
+    }
+  }
+
   useEffect(() => {
-    // Fetch name + location from /me instead of reading removed localStorage keys
-    const token = localStorage.getItem("token");
-    if (!token) return;
-    fetchWithTimeout(`${API_BASE}/api/auth/me`, {
-      credentials: "include",
-    })
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => {
-        const user = data?.data?.user ?? data?.user; // support both old and new shape
-        if (user) {
-          if (user.name) setName(user.name);
-          if (user.location) setLocation(user.location);
+    const loadProfile = async () => {
+      try {
+        const res = await fetchWithTimeout(`${API_BASE}/api/auth/me`, {
+          credentials: "include",
+        });
+
+        if (res.status === 401) {
+          clearStoredAuth();
+          router.push("/login");
+          return;
         }
-      })
-      .catch(() => {});
-  }, [API_BASE]);
+
+        const data = await safeParseResponse(res);
+        if (!res.ok) return;
+
+        const user = data?.data?.user ?? data?.user;
+        if (user?.name) setName(user.name);
+        if (user?.location) setLocation(user.location);
+      } catch {
+        // Keep dashboard render even if profile metadata fails to load
+      }
+    };
+
+    loadProfile();
+  }, [API_BASE, router]);
 
   const quickActions = [
     {

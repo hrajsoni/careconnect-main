@@ -13,14 +13,6 @@ const sanitize = (str) =>
 const JWT_SECRET = process.env.JWT_SECRET;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 
-const COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-  path: "/",
-};
-
 const sanitizeUser = (user) => ({
   _id: user._id,
   id: user._id,
@@ -115,8 +107,7 @@ exports.signup = async (req, res) => {
       location: sanitize(location),
       role: normalizedRole,
       isApproved: !needsApproval,
-      verificationStatus: needsApproval ? "pending" : null,
-      rejectionReason: "",
+      verificationStatus: null,      rejectionReason: "",
       photo: req.file ? req.file.path.replace(/\\/g, "/") : "",
       ...(normalizedRole === ROLES.CARE_ASSISTANT || normalizedRole === ROLES.NURSE
         ? {
@@ -183,7 +174,12 @@ exports.login = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.cookie("authToken", token, COOKIE_OPTIONS);
+    res.cookie("authToken", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     return sendSuccess(
       res,
@@ -204,10 +200,9 @@ exports.login = async (req, res) => {
 
 exports.logout = (req, res) => {
   res.clearCookie("authToken", {
-    httpOnly: COOKIE_OPTIONS.httpOnly,
-    secure: COOKIE_OPTIONS.secure,
-    sameSite: COOKIE_OPTIONS.sameSite,
-    path: COOKIE_OPTIONS.path,
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
   });
 
   return sendSuccess(res, null, "Logged out successfully");

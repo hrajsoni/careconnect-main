@@ -16,8 +16,26 @@ import {
 import AuthGuard from "@/components/AuthGuard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Button from "@/components/ui/Button";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+
+async function safeParseResponse(res: Response) {
+  const contentType = res.headers.get("content-type") || "";
+  const rawText = await res.text();
+
+  if (!rawText) return null;
+
+  if (contentType.includes("application/json")) {
+    try {
+      return JSON.parse(rawText);
+    } catch {
+      throw new Error("Server returned invalid JSON response.");
+    }
+  }
+
+  throw new Error("Unexpected server response received.");
+}
 
 export default function PatientReportsPage() {
   const router = useRouter();
@@ -44,10 +62,22 @@ export default function PatientReportsPage() {
           credentials: "include",
         }
       );
-      const data = await res.json();
+
+      if (res.status === 401) {
+        clearStoredAuth();
+        router.push("/login");
+        return;
+      }
+
+      const data = await safeParseResponse(res);
 
       if (res.ok) {
-        setSavedReports(data?.data || data || []);
+        const reports = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+          ? data
+          : [];
+        setSavedReports(reports);
       }
     } catch (error) {
       console.error(error);
@@ -94,7 +124,13 @@ export default function PatientReportsPage() {
           body: formData,
         });
 
-        const data = await res.json();
+        if (res.status === 401) {
+          clearStoredAuth();
+          router.push("/login");
+          return;
+        }
+
+        const data = await safeParseResponse(res);
 
         if (!res.ok) {
           throw new Error(data.error || data.message || "Upload failed");

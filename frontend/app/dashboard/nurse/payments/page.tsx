@@ -15,6 +15,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
@@ -43,14 +44,22 @@ export default function NursePaymentsPage() {
       });
       
       if (meRes.status === 401) {
-        // Prevents wiping unrelated app data (e.g. theme prefs) on session expiry
-          ["token", "role", "userId"].forEach((k) => localStorage.removeItem(k));
+        clearStoredAuth();
         router.push("/login");
         return;
       }
       
       const meData = await meRes.json();
-      const fetchedNurseId = meData?.user?._id || meData?.user?.id;
+      const fetchedNurseId =
+        meData?.data?.user?._id ||
+        meData?.user?._id ||
+        meData?.data?.user?.id ||
+        meData?.user?.id;
+      if (!fetchedNurseId) {
+        clearStoredAuth();
+        router.push("/login");
+        return;
+      }
       setNurseId(fetchedNurseId);
 
       const res = await fetchWithTimeout(`${API_BASE}/api/payments/nurse/${fetchedNurseId}`, {
@@ -58,8 +67,7 @@ export default function NursePaymentsPage() {
       });
       
       if (res.status === 401) {
-        // Prevents wiping unrelated app data (e.g. theme prefs) on session expiry
-          ["token", "role", "userId"].forEach((k) => localStorage.removeItem(k));
+        clearStoredAuth();
         router.push("/login");
         return;
       }
@@ -67,7 +75,12 @@ export default function NursePaymentsPage() {
       const data = await res.json();
 
       if (res.ok) {
-        setPayments(Array.isArray(data) ? data : []);
+        const paymentList = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+          ? data
+          : [];
+        setPayments(paymentList);
       } else {
         setMessage({ type: "error", text: data.error || data.message || "Failed to fetch payments." });
         setPayments([]);

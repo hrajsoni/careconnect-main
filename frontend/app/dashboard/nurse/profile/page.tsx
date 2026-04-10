@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Button from "@/components/ui/Button";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
@@ -50,8 +51,7 @@ export default function NurseProfilePage() {
         });
 
         if (res.status === 401) {
-          // Prevents wiping unrelated app data (e.g. theme prefs) on session expiry
-          ["token", "role", "userId"].forEach((k) => localStorage.removeItem(k));
+          clearStoredAuth();
           router.push("/login");
           return;
         }
@@ -60,7 +60,19 @@ export default function NurseProfilePage() {
         const data = responseData.data?.user || responseData.user || responseData;
 
         if (res.ok) {
-          setUserId(data._id || data.id);
+          const fetchedNurseId =
+            responseData?.data?.user?._id ||
+            responseData?.user?._id ||
+            responseData?.data?.user?.id ||
+            responseData?.user?.id;
+
+          if (!fetchedNurseId) {
+            clearStoredAuth();
+            router.push("/login");
+            return;
+          }
+
+          setUserId(fetchedNurseId);
           setVerificationStatus(data.verificationStatus || null);
           setFormData({
             name: data.name || "",
@@ -94,12 +106,6 @@ export default function NurseProfilePage() {
     setSaving(true);
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setMessage({ type: "error", text: "You are not logged in." });
-        return;
-      }
-
       if (!userId) {
         setMessage({ type: "error", text: "User profile not loaded yet." });
         return;
@@ -119,8 +125,7 @@ export default function NurseProfilePage() {
       });
 
       if (res.status === 401) {
-        // Prevents wiping unrelated app data (e.g. theme prefs) on session expiry
-          ["token", "role", "userId"].forEach((k) => localStorage.removeItem(k));
+        clearStoredAuth();
         router.push("/login");
         return;
       }

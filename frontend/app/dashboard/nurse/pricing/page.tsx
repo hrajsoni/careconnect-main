@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Button from "@/components/ui/Button";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
@@ -55,20 +56,13 @@ export default function NursePricingPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
       try {
         const meRes = await fetchWithTimeout(`${API_BASE}/api/auth/me`, {
           credentials: "include",
         });
 
         if (meRes.status === 401) {
-          // Prevents wiping unrelated app data (e.g. theme prefs) on session expiry
-          ["token", "role", "userId"].forEach((k) => localStorage.removeItem(k));
+          clearStoredAuth();
           router.push("/login");
           return;
         }
@@ -80,7 +74,17 @@ export default function NursePricingPage() {
         }
 
         const user = meData?.data?.user || meData?.user || meData;
-        const extractedUserId = user?._id || user?.id;
+        const extractedUserId =
+          meData?.data?.user?._id ||
+          meData?.user?._id ||
+          meData?.data?.user?.id ||
+          meData?.user?.id;
+
+        if (!extractedUserId) {
+          clearStoredAuth();
+          router.push("/login");
+          return;
+        }
 
         setUserId(extractedUserId);
         setVerificationStatus(user?.verificationStatus || null);
@@ -123,12 +127,6 @@ export default function NursePricingPage() {
     setSaving(true);
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setMessage({ type: "error", text: "You are not logged in." });
-        return;
-      }
-
       if (!userId) {
         setMessage({ type: "error", text: "User profile not loaded yet." });
         return;
@@ -155,8 +153,7 @@ export default function NursePricingPage() {
       });
 
       if (res.status === 401) {
-        // Prevents wiping unrelated app data (e.g. theme prefs) on session expiry
-        ["token", "role", "userId"].forEach((k) => localStorage.removeItem(k));
+        clearStoredAuth();
         router.push("/login");
         return;
       }

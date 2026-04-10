@@ -1,6 +1,6 @@
 import "./globals.css";
 import Navbar from "@/components/Navbar";
-import CsrfLoader from "@/app/CsrfLoader";
+import { Toaster } from "react-hot-toast";
 
 export const metadata = {
   title: "CareConnect - Home Healthcare Platform",
@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans bg-slate-50 text-slate-800">
-        <CsrfLoader />
+        <Toaster position="top-right" />
         <Navbar />
         <main className="pt-20">{children}</main>
       </body>

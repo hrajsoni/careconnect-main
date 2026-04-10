@@ -18,6 +18,7 @@ import {
 import AuthGuard from "@/components/AuthGuard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Button from "@/components/ui/Button";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
@@ -87,6 +88,12 @@ export default function PatientPaymentsPage() {
         credentials: "include",
       });
 
+      if (res.status === 401) {
+        clearStoredAuth();
+        router.push("/login");
+        return;
+      }
+
       const data = await safeParseResponse(res);
 
       if (!res.ok) {
@@ -142,6 +149,7 @@ export default function PatientPaymentsPage() {
 
       const res = await fetchWithTimeout(`${API_BASE}/api/payments/mark-paid/${paymentId}`, {
         method: "PUT",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           },
@@ -150,6 +158,12 @@ export default function PatientPaymentsPage() {
           reference: `PATIENT-PAY-${Date.now()}`,
         }),
       });
+
+      if (res.status === 401) {
+        clearStoredAuth();
+        router.push("/login");
+        return;
+      }
 
       const data = await safeParseResponse(res);
 

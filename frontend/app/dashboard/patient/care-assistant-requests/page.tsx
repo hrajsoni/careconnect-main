@@ -18,6 +18,7 @@ import {
 import AuthGuard from "@/components/AuthGuard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Button from "@/components/ui/Button";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
@@ -89,8 +90,7 @@ export default function PatientCareAssistantRequestsPage() {
       );
       
       if (res.status === 401) {
-        localStorage.removeItem("role");
-        localStorage.removeItem("userId");
+        clearStoredAuth();
         router.push("/login");
         return;
       }
@@ -166,14 +166,12 @@ export default function PatientCareAssistantRequestsPage() {
         }),
       });
 
-      const data = await safeParseResponse(res);
-
       if (res.status === 401) {
-        localStorage.removeItem("role");
-        localStorage.removeItem("userId");
+        clearStoredAuth();
         router.push("/login");
         return;
       }
+      const data = await safeParseResponse(res);
 
       if (!res.ok) {
         throw new Error(data?.message || "Failed to create request");
@@ -402,18 +400,22 @@ export default function PatientCareAssistantRequestsPage() {
                                   
                                   
 
-                                  const patientId =
-                                    localStorage.getItem("userId") || "";
-
                                   const res = await fetchWithTimeout(
                                     `${API_BASE}/api/care-assistant-requests/patient-cancel/${request._id}`,
                                     {
                                       method: "PUT",
+                                      credentials: "include",
                                       headers: {
                                         "Content-Type": "application/json",
                                         },
                                     }
                                   );
+
+                                  if (res.status === 401) {
+                                    clearStoredAuth();
+                                    router.push("/login");
+                                    return;
+                                  }
 
                                   const data = await safeParseResponse(res);
 

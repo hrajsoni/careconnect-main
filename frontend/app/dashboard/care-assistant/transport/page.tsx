@@ -20,6 +20,7 @@ import {
 import AuthGuard from "@/components/AuthGuard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Button from "@/components/ui/Button";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
@@ -68,14 +69,13 @@ export default function CareAssistantTransportPage() {
         }
       );
 
-      const data = await safeParseResponse(res);
-
       if (res.status === 401) {
-        localStorage.removeItem("role");
-        localStorage.removeItem("userId");
+        clearStoredAuth();
         router.push("/login");
         return;
       }
+
+      const data = await safeParseResponse(res);
 
       if (!res.ok) {
         throw new Error(data?.message || "Failed to load requests");
@@ -125,6 +125,12 @@ export default function CareAssistantTransportPage() {
           body: JSON.stringify({ status }),
         }
       );
+
+      if (res.status === 401) {
+        clearStoredAuth();
+        router.push("/login");
+        return;
+      }
 
       const data = await safeParseResponse(res);
 

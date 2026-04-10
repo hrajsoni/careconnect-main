@@ -31,6 +31,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/Modal";
 import { useRouter } from "next/navigation";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 const DEFAULT_AVATAR = "/placeholder-user.png";
@@ -84,11 +85,7 @@ async function safeParseResponse(res: Response) {
 // localStorage.clear() + window.location.href
 // ============================================================
 const handleUnauthorized = (router: ReturnType<typeof useRouter>) => {
-  localStorage.removeItem("role");
-  localStorage.removeItem("userId");
-  localStorage.removeItem("name");
-  localStorage.removeItem("verificationStatus");
-  localStorage.removeItem("rejectionReason");
+  clearStoredAuth();
   router.push("/login");
 };
 

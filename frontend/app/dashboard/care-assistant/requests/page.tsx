@@ -3,6 +3,7 @@
 import { fetchWithTimeout } from '@/utils/fetchWithTimeout';
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ClipboardList,
@@ -19,6 +20,7 @@ import {
 import AuthGuard from "@/components/AuthGuard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Button from "@/components/ui/Button";
+import { clearStoredAuth } from "@/utils/session";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
@@ -45,6 +47,7 @@ async function safeParseResponse(res: Response) {
 }
 
 export default function CareAssistantRequestsPage() {
+  const router = useRouter();
   const [openRequests, setOpenRequests] = useState<any[]>([]);
   const [myRequests, setMyRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,9 +82,8 @@ export default function CareAssistantRequestsPage() {
       ]);
 
       if (openRes.status === 401 || myRes.status === 401) {
-        localStorage.removeItem("role");
-        localStorage.removeItem("userId");
-        window.location.href = "/login";
+        clearStoredAuth();
+        router.push("/login");
         return;
       }
 
@@ -133,21 +135,20 @@ export default function CareAssistantRequestsPage() {
       );
       
       if (res.status === 401) {
-        localStorage.removeItem("role");
-        localStorage.removeItem("userId");
-        window.location.href = "/login";
+        clearStoredAuth();
+        router.push("/login");
         return;
       }
 
       const data = await safeParseResponse(res);
 
       if (!res.ok) {
-        const message = data && typeof data === "object" ? (data as any).message : null;
-        throw new Error(message || "Failed to accept request");
+        const responseMessage = data && typeof data === "object" ? (data as any).message : null;
+        throw new Error(responseMessage || "Failed to accept request");
       }
 
-      const message = data && typeof data === "object" ? (data as any).message : null;
-      showMessage("success", message || "Request accepted successfully.");
+      const responseMessage = data && typeof data === "object" ? (data as any).message : null;
+      showMessage("success", responseMessage || "Request accepted successfully.");
       await fetchData();
     } catch (error: any) {
       showMessage("error", error.message || "Unable to accept request.");
@@ -178,21 +179,20 @@ export default function CareAssistantRequestsPage() {
       );
       
       if (res.status === 401) {
-        localStorage.removeItem("role");
-        localStorage.removeItem("userId");
-        window.location.href = "/login";
+        clearStoredAuth();
+        router.push("/login");
         return;
       }
 
       const data = await safeParseResponse(res);
 
       if (!res.ok) {
-        const message = data && typeof data === "object" ? (data as any).message : null;
-        throw new Error(message || "Failed to update request");
+        const responseMessage = data && typeof data === "object" ? (data as any).message : null;
+        throw new Error(responseMessage || "Failed to update request");
       }
 
-      const message = data && typeof data === "object" ? (data as any).message : null;
-      showMessage("success", message || "Request updated successfully.");
+      const responseMessage = data && typeof data === "object" ? (data as any).message : null;
+      showMessage("success", responseMessage || "Request updated successfully.");
       await fetchData();
     } catch (error: any) {
       showMessage("error", error.message || "Unable to update request.");
