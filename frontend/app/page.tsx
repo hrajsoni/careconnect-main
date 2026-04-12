@@ -5,120 +5,120 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  Ambulance,
-  ArrowRight,
-  BadgeCheck,
-  BellRing,
-  CalendarClock,
-  ClipboardPlus,
-  Database,
-  HeartHandshake,
-  Home,
-  MapPin,
   ShieldCheck,
-  Sparkles,
+  MapPin,
+  HeartHandshake,
   Stethoscope,
-  Users,
+  Clock3,
+  Star,
+  ArrowRight,
+  UserRound,
+  Ambulance,
+  BadgeCheck,
 } from "lucide-react";
 
 const services = [
   {
+    title: "Elderly Care",
+    icon: "🧓",
+    description:
+      "Compassionate support for seniors including mobility help, hygiene assistance, feeding, and companionship.",
+  },
+  {
     title: "Home Nursing",
+    icon: "🏠",
     description:
-      "Book trained nurses for injections, wound dressing, medication support, BP monitoring, and routine care at home.",
-    Icon: Home,
+      "Professional nursing services at home for recovery, monitoring, medication, and daily medical care.",
   },
   {
-    title: "Care Companion",
+    title: "Medical Assistance",
+    icon: "💉",
     description:
-      "Arrange hospital visit assistance for elderly patients and people who need support during appointments and safe return home.",
-    Icon: Users,
+      "Certified nurses for injections, BP monitoring, sugar checks, dressing, IV support, and more.",
   },
   {
-    title: "Family Notifications",
+    title: "Emergency Support",
+    icon: "🚑",
     description:
-      "Keep family members informed when a service is accepted, scheduled, and completed.",
-    Icon: BellRing,
+      "Urgent at-home nursing support for immediate care needs and fast professional assistance.",
   },
   {
-    title: "Verified Providers",
+    title: "Post-Hospital Care",
+    icon: "🩺",
     description:
-      "Provider onboarding supports verification workflows for nurses and care assistants before active service delivery.",
-    Icon: BadgeCheck,
+      "Recovery-focused care after discharge with patient monitoring, medication support, and assistance.",
   },
   {
-    title: "Booking Management",
+    title: "Hospital Visit Companion",
+    icon: "🤝",
     description:
-      "Track service requests, schedules, records, and status updates through role-based dashboards.",
-    Icon: CalendarClock,
-  },
-  {
-    title: "Digital Records",
-    description:
-      "Maintain organized service history, patient reports, and healthcare support records in one platform.",
-    Icon: Database,
+      "Trusted assistance for patients needing help during hospital visits, follow-ups, checkups, and safe return home.",
   },
 ];
 
-const workflow = [
+const steps = [
   {
-    title: "Patient creates a request",
+    title: "Choose a Care Need",
     description:
-      "The user selects a care need, preferred date, time, and service type through the web application.",
-    Icon: ClipboardPlus,
+      "Select the service you need, from elderly care and home nursing to medical assistance and hospital visit support.",
+    icon: <Stethoscope className="w-6 h-6" />,
   },
   {
-    title: "Provider accepts the service",
+    title: "Find Verified Professionals",
     description:
-      "A nurse or care assistant reviews the request, accepts it, and prepares for the visit.",
-    Icon: ShieldCheck,
+      "Browse trained and verified nurses based on service type, availability, and nearby location.",
+    icon: <ShieldCheck className="w-6 h-6" />,
   },
   {
-    title: "Care is delivered",
+    title: "Book with Confidence",
     description:
-      "The provider completes the home visit or hospital accompaniment and updates the service status.",
-    Icon: Stethoscope,
-  },
-  {
-    title: "Family is informed",
-    description:
-      "The platform records the outcome and can notify the selected family contact after completion.",
-    Icon: HeartHandshake,
+      "Confirm the booking, receive updates, and get dependable care delivered safely to your doorstep.",
+    icon: <HeartHandshake className="w-6 h-6" />,
   },
 ];
 
-const modules = [
-  "Patient registration and login",
-  "Nurse dashboard and verification flow",
-  "Care assistant dashboard and requests",
-  "Admin control panel",
-  "Booking and scheduling system",
-  "Reports, payments, and service tracking",
+const highlights = [
+  {
+    title: "Verified Professionals",
+    description:
+      "Every nurse is reviewed through document verification before becoming available on CareConnect.",
+    icon: <BadgeCheck className="w-6 h-6" />,
+  },
+  {
+    title: "Location-Based Matching",
+    description:
+      "Patients can find nearby nurses for faster response and more convenient care access.",
+    icon: <MapPin className="w-6 h-6" />,
+  },
+  {
+    title: "Reliable Home Support",
+    description:
+      "From post-hospital recovery to daily assistance, care reaches families where they need it most.",
+    icon: <UserRound className="w-6 h-6" />,
+  },
+  {
+    title: "Urgent Care Readiness",
+    description:
+      "Built for quick nurse discovery when immediate medical support is needed at home.",
+    icon: <Ambulance className="w-6 h-6" />,
+  },
 ];
 
-const stack = [
-  { label: "Frontend", value: "Next.js, React, Tailwind CSS, TypeScript" },
-  { label: "Backend", value: "Node.js, Express.js, JWT and cookie auth" },
-  { label: "Database", value: "MongoDB with Mongoose models" },
-  { label: "Security", value: "CSRF token flow, HTTPOnly auth cookies, role guards" },
+const stats = [
+  { label: "Verified Nurse Onboarding", value: "100%" },
+  { label: "Home-Based Care Focus", value: "24/7" },
+  { label: "Care Categories", value: "6+" },
+  { label: "Trust-First Experience", value: "Safe" },
 ];
 
-const outcomes = [
-  "Improves access to home healthcare for elderly and recovering patients",
-  "Reduces friction in finding verified help for simple but urgent care needs",
-  "Supports family transparency through service completion updates",
-  "Demonstrates a complete multi-role healthcare web platform for practical use",
-];
-
-export default function HomePage() {
+export default function Home() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
 
-    if (token && role) {
+    if (role) {
       const dashboardMap: Record<string, string> = {
         admin: "/dashboard/admin",
         nurse: "/dashboard/nurse",
@@ -140,156 +140,159 @@ export default function HomePage() {
   if (!ready) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50 flex items-center justify-center text-slate-400">
-        Loading CareConnect...
+        Loading...
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-teal-50 text-slate-900">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50 overflow-hidden text-slate-900">
+      {/* Hero Section */}
       <section className="relative px-6 md:px-10 lg:px-16 pt-10 pb-24">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-20 left-10 h-72 w-72 rounded-full bg-teal-200/30 blur-3xl" />
-          <div className="absolute bottom-10 right-10 h-80 w-80 rounded-full bg-cyan-200/25 blur-3xl" />
-          <div className="absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-100/30 blur-3xl" />
+          <div className="absolute top-20 left-10 w-72 h-72 bg-teal-200/30 rounded-full blur-3xl" />
+          <div className="absolute bottom-10 right-10 w-80 h-80 bg-cyan-200/30 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-emerald-100/30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
         </div>
 
-        <div className="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+        <div className="relative max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <motion.div
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-sm font-semibold text-teal-700"
+              transition={{ duration: 0.6 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-50 border border-teal-100 text-teal-700 text-sm font-semibold mb-6"
             >
-              <Sparkles className="h-4 w-4" />
-              Role-based healthcare coordination platform
+              <ShieldCheck className="w-4 h-4" />
+              Trusted, verified home healthcare support
             </motion.div>
 
             <motion.h1
-              initial={{ opacity: 0, y: 28 }}
+              initial={{ opacity: 0, y: 35 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="max-w-4xl text-5xl font-bold leading-tight text-slate-900 md:text-6xl xl:text-7xl"
+              transition={{ duration: 0.7 }}
+              className="text-5xl md:text-6xl xl:text-7xl font-bold leading-tight text-slate-900"
             >
-              CareConnect
-              <span className="mt-2 block text-teal-500">
-                Home healthcare and patient companion support in one platform
+              Compassionate Healthcare
+              <span className="block text-teal-500 mt-2">
+                Delivered to Your Doorstep
               </span>
             </motion.h1>
 
             <motion.p
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.75 }}
-              className="mt-6 max-w-3xl text-lg leading-relaxed text-slate-600 md:text-xl"
+              transition={{ duration: 0.9 }}
+              className="mt-6 text-lg md:text-xl text-slate-600 leading-relaxed max-w-2xl"
             >
-              CareConnect is a web-based healthcare assistance platform that helps
-              patients book nurses for home services and arrange trained care
-              companions for hospital visits. It is designed as a practical,
-              full-stack solution for accessibility, transparency, and service
-              coordination.
+              CareConnect helps families find verified nurses and care support
+              for home medical needs, elderly assistance, post-hospital recovery,
+              and hospital visit companionship — safely, quickly, and reliably.
             </motion.p>
 
             <motion.div
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9 }}
-              className="mt-10 flex flex-col gap-4 sm:flex-row"
+              transition={{ duration: 1.1 }}
+              className="mt-10 flex flex-col sm:flex-row gap-4"
             >
               <Link
                 href="/signup"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-teal-500 px-8 py-4 font-semibold text-white shadow-lg transition hover:-translate-y-1 hover:bg-teal-600 hover:shadow-xl"
+                className="inline-flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white px-8 py-4 rounded-full font-semibold shadow-lg hover:shadow-xl transition transform hover:-translate-y-1"
               >
-                Create Account
-                <ArrowRight className="h-4 w-4" />
+                Book a Service
+                <ArrowRight className="w-4 h-4" />
               </Link>
+
               <Link
-                href="#services"
-                className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-8 py-4 font-semibold text-slate-700 shadow-sm transition hover:shadow-md"
+                href="/signup"
+                className="inline-flex items-center justify-center bg-white border border-slate-300 text-slate-700 px-8 py-4 rounded-full font-semibold shadow-sm hover:shadow-md transition"
               >
-                Browse Services
+                Join as a Nurse
               </Link>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1 }}
+              transition={{ duration: 1.2 }}
               className="mt-8 flex flex-wrap gap-6 text-sm text-slate-600"
             >
               <div className="flex items-center gap-2">
-                <BadgeCheck className="h-4 w-4 text-teal-500" />
-                Verified provider onboarding
+                <BadgeCheck className="w-4 h-4 text-teal-500" />
+                Verified nurses
               </div>
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-teal-500" />
-                Location-aware nurse discovery
+                <MapPin className="w-4 h-4 text-teal-500" />
+                Location-based discovery
               </div>
               <div className="flex items-center gap-2">
-                <Ambulance className="h-4 w-4 text-teal-500" />
-                Hospital companion service
+                <Clock3 className="w-4 h-4 text-teal-500" />
+                Convenient care scheduling
               </div>
             </motion.div>
           </div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.97, y: 18 }}
+            initial={{ opacity: 0, scale: 0.96, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
+            transition={{ duration: 0.8 }}
             className="relative"
           >
-            <div className="rounded-[2rem] border border-white/70 bg-white/80 p-6 shadow-2xl backdrop-blur-xl md:p-8">
+            <div className="rounded-[2rem] border border-white/60 bg-white/80 backdrop-blur-xl shadow-2xl p-6 md:p-8">
               <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-teal-700 p-6 text-white shadow-lg">
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-100">
-                        Platform Overview
-                      </p>
-                      <h2 className="mt-3 text-2xl font-bold">
-                        Centralized healthcare support workflow
-                      </h2>
-                    </div>
-                    <ShieldCheck className="h-10 w-10 text-teal-200" />
+                <div className="rounded-3xl bg-gradient-to-br from-teal-500 to-cyan-500 p-6 text-white shadow-lg min-h-[180px] flex flex-col justify-between">
+                  <div className="text-sm font-semibold opacity-90">
+                    At-Home Nursing
                   </div>
-                  <p className="mt-4 text-sm leading-relaxed text-slate-200">
-                    Patients, nurses, care assistants, and admins operate through
-                    dedicated dashboards with centralized booking, approval, and
-                    notification logic.
-                  </p>
+                  <div>
+                    <div className="text-4xl font-bold">24/7</div>
+                    <p className="text-sm opacity-90 mt-2">
+                      Flexible nursing care designed for home recovery and
+                      ongoing assistance.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                  <p className="text-sm font-semibold text-slate-500">User Roles</p>
-                  <p className="mt-3 text-4xl font-extrabold text-teal-600">4</p>
-                  <p className="mt-2 text-sm text-slate-600">
-                    Patient, Nurse, Care Assistant, Admin
-                  </p>
+                <div className="rounded-3xl bg-slate-50 border border-slate-200 p-6 min-h-[180px] flex flex-col justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center">
+                    <ShieldCheck className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900">
+                      Verified Professionals
+                    </h3>
+                    <p className="text-sm text-slate-600 mt-2">
+                      Every nurse goes through an approval workflow before
+                      joining the platform.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                  <p className="text-sm font-semibold text-slate-500">Core Services</p>
-                  <p className="mt-3 text-4xl font-extrabold text-cyan-600">2</p>
-                  <p className="mt-2 text-sm text-slate-600">
-                    Home nursing and hospital companion support
-                  </p>
+                <div className="rounded-3xl bg-slate-50 border border-slate-200 p-6 min-h-[180px] flex flex-col justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-cyan-100 text-cyan-600 flex items-center justify-center">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900">
+                      Nearby Care Access
+                    </h3>
+                    <p className="text-sm text-slate-600 mt-2">
+                      Quickly find professionals based on area, availability,
+                      and service type.
+                    </p>
+                  </div>
                 </div>
 
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                  <p className="text-sm font-semibold text-slate-500">Security Flow</p>
-                  <p className="mt-3 text-lg font-bold text-slate-900">Cookie auth + CSRF</p>
-                  <p className="mt-2 text-sm text-slate-600">
-                    HTTPOnly cookie sessions with request protection
-                  </p>
-                </div>
-
-                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                  <p className="text-sm font-semibold text-slate-500">Use Case</p>
-                  <p className="mt-3 text-lg font-bold text-slate-900">College + portfolio</p>
-                  <p className="mt-2 text-sm text-slate-600">
-                    Suitable for demo, viva, and project showcase presentation
-                  </p>
+                <div className="rounded-3xl bg-gradient-to-br from-slate-900 to-slate-700 p-6 text-white min-h-[180px] flex flex-col justify-between shadow-lg">
+                  <Star className="w-8 h-8 text-yellow-400" />
+                  <div>
+                    <h3 className="text-xl font-bold">Patient-Centered Care</h3>
+                    <p className="text-sm text-slate-200 mt-2">
+                      Built for families seeking safe, compassionate, and
+                      practical healthcare support.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -297,226 +300,249 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="px-6 pb-10 md:px-10 lg:px-16">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 md:grid-cols-4">
-          {[
-            { label: "Role-based dashboards", value: "4" },
-            { label: "Core support journeys", value: "2" },
-            { label: "Full-stack modules", value: "6+" },
-            { label: "Showcase readiness", value: "Built" },
-          ].map((item, index) => (
+      <section className="px-6 md:px-10 lg:px-16 pb-10">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+          {stats.map((item, index) => (
             <motion.div
               key={item.label}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.45, delay: index * 0.06 }}
-              className="rounded-3xl border border-slate-200 bg-white/80 p-6 text-center shadow-sm backdrop-blur-md"
+              transition={{ duration: 0.5, delay: index * 0.08 }}
+              className="rounded-3xl bg-white/80 backdrop-blur-md border border-slate-200 p-6 text-center shadow-sm"
             >
-              <div className="text-3xl font-extrabold text-teal-600">{item.value}</div>
-              <div className="mt-2 text-sm text-slate-600">{item.label}</div>
+              <div className="text-3xl font-extrabold text-teal-600">
+                {item.value}
+              </div>
+              <div className="text-sm text-slate-600 mt-2">{item.label}</div>
             </motion.div>
           ))}
         </div>
       </section>
 
-      <section id="services" className="px-6 py-20 md:px-12 lg:px-20">
+      <section id="services" className="px-6 md:px-12 lg:px-20 py-20">
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mx-auto mb-14 max-w-3xl text-center"
+          transition={{ duration: 0.7 }}
+          className="text-center mb-14"
         >
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-600">
-            Core Capabilities
+          <p className="text-teal-600 font-semibold tracking-[0.2em] uppercase text-sm">
+            Our Services
           </p>
-          <h2 className="mt-3 text-3xl font-bold text-slate-900 md:text-5xl">
-            Services and modules aligned with a real product workflow
+          <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mt-3">
+            Professional Care, Tailored for Every Need
           </h2>
-          <p className="mt-4 text-lg leading-relaxed text-slate-500">
-            The platform supports the real multi-user workflows expected in a
-            healthcare service management system.
+          <p className="text-slate-500 mt-4 max-w-2xl mx-auto text-lg leading-relaxed">
+            Explore our trusted range of at-home healthcare and patient support
+            services designed for families, seniors, and recovering patients.
           </p>
         </motion.div>
 
-        <div className="mx-auto grid max-w-6xl gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {services.map(({ title, description, Icon }, index) => (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {services.map((service, index) => (
             <motion.div
-              key={title}
-              initial={{ opacity: 0, y: 30 }}
+              key={index}
+              initial={{ opacity: 0, y: 35 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.45, delay: index * 0.07 }}
-              className="group rounded-3xl border border-slate-200 bg-white p-8 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
+              transition={{ duration: 0.5, delay: index * 0.08 }}
+              whileHover={{ y: -10, scale: 1.02 }}
+              className="group relative min-h-[290px] rounded-3xl border border-slate-200 bg-white p-8 shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden"
             >
-              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-500 text-white shadow-lg">
-                <Icon className="h-8 w-8" />
+              <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-white to-cyan-50 opacity-0 group-hover:opacity-100 transition duration-500" />
+
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-500 text-white flex items-center justify-center text-3xl shadow-lg mb-6">
+                  {service.icon}
+                </div>
+
+                <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                  {service.title}
+                </h3>
+
+                <p className="text-slate-600 leading-relaxed flex-grow">
+                  {service.description}
+                </p>
+
+                <div className="mt-8 flex items-center text-teal-600 font-semibold">
+                  Learn More
+                  <span className="ml-2 transition-transform duration-300 group-hover:translate-x-2">
+                    →
+                  </span>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900">{title}</h3>
-              <p className="mt-4 leading-relaxed text-slate-600">{description}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
-      <section id="how-it-works" className="bg-white/60 px-6 py-20 md:px-12 lg:px-20">
-        <div className="mx-auto max-w-6xl">
+      <section
+        id="how-it-works"
+        className="px-6 md:px-12 lg:px-20 py-20 bg-white/60"
+      >
+        <div className="max-w-6xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="mb-14 text-center"
+            className="text-center mb-14"
           >
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-600">
+            <p className="text-teal-600 font-semibold tracking-[0.2em] uppercase text-sm">
               How It Works
             </p>
-            <h2 className="mt-3 text-3xl font-bold text-slate-900 md:text-5xl">
-              A clean workflow from patient request to completed care
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mt-3">
+              Simple, Safe, and Reliable
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-500">
-              The same flow is used across the application to keep bookings,
-              approvals, and updates consistent.
+            <p className="text-slate-500 mt-4 max-w-2xl mx-auto text-lg">
+              CareConnect makes home healthcare more accessible by connecting
+              patients with verified professionals in just a few steps.
             </p>
           </motion.div>
 
-          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
-            {workflow.map(({ title, description, Icon }, index) => (
+          <div className="grid md:grid-cols-3 gap-8">
+            {steps.map((step, index) => (
               <motion.div
-                key={title}
+                key={step.title}
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.45, delay: index * 0.08 }}
-                className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm"
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="relative rounded-3xl bg-white border border-slate-200 p-8 shadow-sm hover:shadow-xl transition"
               >
-                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-100 text-teal-600">
-                  <Icon className="h-6 w-6" />
+                <div className="w-14 h-14 rounded-2xl bg-teal-100 text-teal-600 flex items-center justify-center mb-6">
+                  {step.icon}
                 </div>
-                <div className="mb-2 text-sm font-bold text-teal-600">
+                <div className="text-sm font-bold text-teal-600 mb-2">
                   Step {index + 1}
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900">{title}</h3>
-                <p className="mt-3 leading-relaxed text-slate-600">{description}</p>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                  {step.title}
+                </h3>
+                <p className="text-slate-600 leading-relaxed">
+                  {step.description}
+                </p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="why-us" className="px-6 py-20 md:px-12 lg:px-20">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1fr_1fr] lg:items-start">
+      <section id="why-us" className="px-6 md:px-12 lg:px-20 py-20">
+        <div className="max-w-6xl mx-auto">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.55 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-14"
           >
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-teal-600">
+            <p className="text-teal-600 font-semibold tracking-[0.2em] uppercase text-sm">
               Why CareConnect
             </p>
-            <h2 className="mt-3 text-3xl font-bold text-slate-900 md:text-5xl">
-              Built around a real healthcare gap, not a generic booking idea
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mt-3">
+              Built Around Trust, Care, and Convenience
             </h2>
-            <p className="mt-5 text-lg leading-relaxed text-slate-600">
-              Existing systems often focus on doctor appointments or broader
-              institutional healthcare services. CareConnect focuses on the smaller,
-              urgent, and practical care needs families struggle to arrange quickly.
+            <p className="text-slate-500 mt-4 max-w-2xl mx-auto text-lg">
+              We are creating a healthcare service experience that is dependable,
+              transparent, and designed for real family needs.
             </p>
-
-            <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="text-xl font-bold text-slate-900">Expected outcomes</h3>
-              <ul className="mt-4 space-y-3 text-slate-600">
-                {outcomes.map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-teal-500" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.55 }}
-            className="space-y-6"
-          >
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-              <h3 className="text-2xl font-bold text-slate-900">System modules</h3>
-              <div className="mt-5 grid gap-3">
-                {modules.map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700"
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-teal-700 p-8 text-white shadow-xl">
-              <h3 className="text-2xl font-bold">Technology stack</h3>
-              <div className="mt-5 space-y-4">
-                {stack.map((item) => (
-                  <div key={item.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                    <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-100">
-                      {item.label}
-                    </p>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-100">
-                      {item.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
+          <div className="grid sm:grid-cols-2 gap-8">
+            {highlights.map((item, index) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 26 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                className="rounded-3xl bg-white border border-slate-200 p-8 shadow-sm hover:shadow-xl transition"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-500 text-white flex items-center justify-center shadow-md mb-6">
+                  {item.icon}
+                </div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                  {item.title}
+                </h3>
+                <p className="text-slate-600 leading-relaxed">
+                  {item.description}
+                </p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="px-6 pb-24 md:px-12 lg:px-20">
+      <section className="px-6 md:px-12 lg:px-20 pb-24">
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 26 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.55 }}
-          className="mx-auto max-w-6xl rounded-[2rem] bg-gradient-to-r from-slate-900 via-slate-800 to-teal-700 p-10 text-white shadow-2xl md:p-14"
+          transition={{ duration: 0.6 }}
+          className="max-w-6xl mx-auto rounded-[2rem] bg-gradient-to-r from-slate-900 via-slate-800 to-teal-700 p-10 md:p-14 text-white shadow-2xl"
         >
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-teal-200">
-              Product Ready
+            <p className="uppercase tracking-[0.25em] text-sm text-teal-200 font-semibold">
+              Get Started
             </p>
-            <h2 className="mt-3 text-3xl font-bold leading-tight md:text-5xl">
-              Present the idea, architecture, and working flow with confidence
+            <h2 className="text-3xl md:text-5xl font-bold mt-3 leading-tight">
+              Trusted Care for Your Loved Ones Starts Here
             </h2>
-            <p className="mt-5 text-lg leading-relaxed text-slate-200">
-              This project now has a stronger foundation for evaluation,
-              portfolio review, and further feature expansion. The landing page
-              introduces the platform clearly, while the dashboards demonstrate
-              the live workflows.
+            <p className="mt-5 text-slate-200 text-lg leading-relaxed">
+              Whether you need a verified nurse for home care or a reliable
+              medical companion for hospital visits, CareConnect is built to
+              make care more accessible, secure, and comforting.
             </p>
 
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+            <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <Link
                 href="/signup"
-                className="inline-flex items-center justify-center rounded-full bg-white px-7 py-4 font-semibold text-slate-900 transition hover:bg-slate-100"
+                className="inline-flex items-center justify-center px-7 py-4 rounded-full bg-white text-slate-900 font-semibold hover:bg-slate-100 transition"
               >
-                Register a Demo User
+                Register Now
               </Link>
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center rounded-full border border-white/30 px-7 py-4 font-semibold text-white transition hover:bg-white/10"
+                className="inline-flex items-center justify-center px-7 py-4 rounded-full border border-white/30 text-white font-semibold hover:bg-white/10 transition"
               >
-                Open Dashboard Login
+                Login to Dashboard
               </Link>
             </div>
           </div>
         </motion.div>
       </section>
+
+      <footer className="border-t border-slate-200 bg-white/70 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-6 md:px-10 lg:px-16 py-8 flex flex-col md:flex-row justify-between gap-4 text-sm text-slate-600">
+          <div>
+            <span className="font-bold text-slate-900">
+              Care<span className="text-teal-500">Connect</span>
+            </span>{" "}
+            — Compassionate healthcare, closer to home.
+          </div>
+
+          <div className="flex flex-wrap gap-6">
+            <a href="#services" className="hover:text-teal-600 transition">
+              Services
+            </a>
+            <a href="#how-it-works" className="hover:text-teal-600 transition">
+              How It Works
+            </a>
+            <a href="#why-us" className="hover:text-teal-600 transition">
+              Why CareConnect
+            </a>
+            <Link href="/login" className="hover:text-teal-600 transition">
+              Login
+            </Link>
+            <Link href="/signup" className="hover:text-teal-600 transition">
+              Signup
+            </Link>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
