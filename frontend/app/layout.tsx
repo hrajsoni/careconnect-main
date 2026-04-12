@@ -1,6 +1,7 @@
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { Toaster } from "react-hot-toast";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata = {
   title: "CareConnect - Home Healthcare Platform",
@@ -18,6 +19,7 @@ export default function RootLayout({
         <Toaster position="top-right" />
         <Navbar />
         <main className="pt-20">{children}</main>
+        <SpeedInsights />
       </body>
     </html>
   );
