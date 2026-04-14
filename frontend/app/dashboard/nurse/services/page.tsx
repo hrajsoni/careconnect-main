@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 
 import { fetchWithTimeout } from '@/utils/fetchWithTimeout';
+import { getFixedPrice } from '@/utils/pricing';
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -262,9 +263,12 @@ export default function NurseServicesPage() {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: index * 0.04 }}
-                        className="px-4 py-2 rounded-full bg-white border border-teal-200 text-slate-700 font-medium shadow-sm"
+                        className="px-4 py-2 rounded-full bg-white border border-teal-200 text-slate-700 font-medium shadow-sm flex items-center gap-2"
                       >
                         {service}
+                        <span className="text-teal-700 font-bold bg-teal-50 border border-teal-100 px-2 py-0.5 rounded-lg text-xs">
+                          ₹{getFixedPrice(service)}
+                        </span>
                       </motion.div>
                     ))}
                   </div>
@@ -318,8 +322,9 @@ export default function NurseServicesPage() {
                                       )
                                     }
                                   />
-                                  <span className="text-sm font-medium text-slate-600">
+                                  <span className="text-sm font-medium text-slate-600 flex items-center gap-2">
                                     {service}
+                                    <span className="text-teal-700 font-bold">₹{getFixedPrice(service)}</span>
                                   </span>
                                 </label>
                               ))}

@@ -145,7 +145,6 @@ export default function NurseDashboard() {
   const [files, setFiles] = useState<Record<string, File>>({});
   const [expanded, setExpanded] = useState<number | null>(null);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [customService, setCustomService] = useState("");
   const [loading, setLoading] = useState(false);
   const [savingServices, setSavingServices] = useState(false);
   const [savingAvailability, setSavingAvailability] = useState(false);
@@ -268,7 +267,7 @@ export default function NurseDashboard() {
           .filter((b: { paymentStatus: string }) => b.paymentStatus === "paid")
           .reduce(
             (sum: number, b: { paymentAmount?: number }) =>
-              sum + Number(b.paymentAmount || 0),
+              sum + Math.round(Number(b.paymentAmount || 0) * 0.70),
             0
           );
 
@@ -395,12 +394,7 @@ export default function NurseDashboard() {
         return;
       }
 
-      const trimmedCustomService = customService.trim();
       const finalServices = [...selectedServices];
-
-      if (trimmedCustomService && !finalServices.includes(trimmedCustomService)) {
-        finalServices.push(trimmedCustomService);
-      }
 
       if (finalServices.length === 0) {
         setMessage({
@@ -437,7 +431,6 @@ export default function NurseDashboard() {
       setSelectedServices(finalServices);
       setHasSavedServices(true);
       setIsEditingServices(false);
-      setCustomService("");
 
       setMessage({
         type: "success",
@@ -894,7 +887,11 @@ export default function NurseDashboard() {
                   </div>
 
                   <div className="grid md:grid-cols-3 gap-4">
-                    {["photo", "idProof", "licenseProof"].map((field) => (
+                    {[
+                      { field: "photo", label: "Profile Photo" },
+                      { field: "idProof", label: "National ID (e.g., Aadhaar) / Passport" },
+                      { field: "licenseProof", label: "Upload License" },
+                    ].map(({ field, label }) => (
                       <label
                         key={field}
                         className="relative flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 rounded-2xl hover:bg-slate-50 hover:border-teal-400 cursor-pointer transition-all group"
@@ -909,8 +906,13 @@ export default function NurseDashboard() {
                         <span className="text-xs font-bold text-slate-500 text-center uppercase tracking-tighter">
                           {files[field]
                             ? files[field].name.substring(0, 15) + "..."
-                            : `Upload ${field}`}
+                            : label}
                         </span>
+                        {field === "idProof" && !files[field] && (
+                          <span className="text-[10px] text-slate-400 mt-0.5 text-center">
+                            (Front &amp; Back)
+                          </span>
+                        )}
                         <input
                           type="file"
                           name={field}
@@ -1071,17 +1073,6 @@ export default function NurseDashboard() {
                       ))}
 
                       <div className="mt-8 space-y-4">
-                        <div className="relative">
-                          <input
-                            type="text"
-                            placeholder="Add a specialized service..."
-                            className="w-full p-4 pr-12 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-teal-500"
-                            value={customService}
-                            onChange={(e) => setCustomService(e.target.value)}
-                          />
-                          <Plus className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                        </div>
-
                         <div className="flex flex-col sm:flex-row gap-3">
                           <Button
                             type="button"
@@ -1097,7 +1088,6 @@ export default function NurseDashboard() {
                               type="button"
                               onClick={() => {
                                 setIsEditingServices(false);
-                                setCustomService("");
                               }}
                               className="flex-1 py-4 rounded-2xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold"
                             >

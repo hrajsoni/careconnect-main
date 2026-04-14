@@ -15,6 +15,7 @@ import {
   UserRound,
   Ambulance,
   BadgeCheck,
+  CheckCircle2,
 } from "lucide-react";
 
 const services = [
@@ -114,6 +115,23 @@ const stats = [
 export default function Home() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
+  const [dbServices, setDbServices] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+        const res = await fetch(`${API_BASE}/api/services`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          setDbServices(data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch services", err);
+      }
+    };
+    fetchServices();
+  }, []);
 
   useEffect(() => {
     const role = localStorage.getItem("role");
@@ -341,40 +359,83 @@ export default function Home() {
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {services.map((service, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 35 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.08 }}
-              whileHover={{ y: -10, scale: 1.02 }}
-              className="group relative min-h-[290px] rounded-3xl border border-slate-200 bg-white p-8 shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-white to-cyan-50 opacity-0 group-hover:opacity-100 transition duration-500" />
-
-              <div className="relative z-10 flex flex-col h-full">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-500 text-white flex items-center justify-center text-3xl shadow-lg mb-6">
-                  {service.icon}
+          {dbServices.length > 0 ? (
+            dbServices.map((service, index) => (
+              <motion.div
+                key={service._id}
+                initial={{ opacity: 0, y: 35 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                whileHover={{ y: -10, scale: 1.02 }}
+                className="group relative min-h-[290px] rounded-3xl border border-slate-200 bg-white p-8 shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-white to-cyan-50 opacity-0 group-hover:opacity-100 transition duration-500" />
+                <div className="relative z-10 flex flex-col h-full">
+                  <h3 className="text-2xl font-bold text-slate-900 mb-3 block truncate">
+                    {service.name}
+                  </h3>
+                  <div className="mb-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 text-teal-700 text-sm font-bold w-fit">
+                    Starting at ₹{service.price}
+                  </div>
+                  <p className="text-slate-600 leading-relaxed flex-grow line-clamp-3">
+                    {service.description}
+                  </p>
+                  {service.features && service.features.length > 0 && (
+                    <div className="mt-4 space-y-1">
+                      {service.features.slice(0, 3).map((feature: string, idx: number) => (
+                        <div key={idx} className="flex items-center text-xs text-slate-500">
+                          <CheckCircle2 className="w-3 h-3 text-teal-500 mr-1.5" />
+                          {feature}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <Link href="/signup" className="mt-6 flex items-center text-teal-600 font-semibold cursor-pointer z-20">
+                    Book Now
+                    <span className="ml-2 transition-transform duration-300 group-hover:translate-x-2">
+                      →
+                    </span>
+                  </Link>
                 </div>
+              </motion.div>
+            ))
+          ) : (
+            services.map((service, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 35 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                whileHover={{ y: -10, scale: 1.02 }}
+                className="group relative min-h-[290px] rounded-3xl border border-slate-200 bg-white p-8 shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-white to-cyan-50 opacity-0 group-hover:opacity-100 transition duration-500" />
 
-                <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                  {service.title}
-                </h3>
+                <div className="relative z-10 flex flex-col h-full">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-500 text-white flex items-center justify-center text-3xl shadow-lg mb-6">
+                    {service.icon}
+                  </div>
 
-                <p className="text-slate-600 leading-relaxed flex-grow">
-                  {service.description}
-                </p>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                    {service.title}
+                  </h3>
 
-                <div className="mt-8 flex items-center text-teal-600 font-semibold">
-                  Learn More
-                  <span className="ml-2 transition-transform duration-300 group-hover:translate-x-2">
-                    →
-                  </span>
+                  <p className="text-slate-600 leading-relaxed flex-grow">
+                    {service.description}
+                  </p>
+
+                  <Link href="/signup" className="mt-8 flex items-center text-teal-600 font-semibold cursor-pointer z-20">
+                    Learn More
+                    <span className="ml-2 transition-transform duration-300 group-hover:translate-x-2">
+                      →
+                    </span>
+                  </Link>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))
+          )}
         </div>
       </section>
 

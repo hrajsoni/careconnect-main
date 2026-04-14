@@ -12,6 +12,24 @@ const sanitize = (str) =>
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const FRONTEND_URL = process.env.FRONTEND_URL;
+const IS_PROD = process.env.NODE_ENV === "production";
+
+// Cookie options — cross-domain safe on production (Vercel + Render)
+// SameSite=None + Secure=true is REQUIRED when frontend and backend
+// are on different domains (e.g. .vercel.app vs .onrender.com)
+// On localhost, lax/false is fine since both run on localhost
+const cookieOptions = {
+  httpOnly: true,
+  secure: IS_PROD,                          // true on HTTPS (Render), false on localhost
+  sameSite: IS_PROD ? "none" : "lax",      // "none" required for cross-domain
+  maxAge: 7 * 24 * 60 * 60 * 1000,        // 7 days
+};
+
+const clearCookieOptions = {
+  httpOnly: true,
+  secure: IS_PROD,
+  sameSite: IS_PROD ? "none" : "lax",
+};
 
 const sanitizeUser = (user) => ({
   _id: user._id,
@@ -51,7 +69,26 @@ exports.signup = async (req, res) => {
       qualification,
       experience,
       registrationNumber,
+      services,
+      servicePrices,
     } = req.body;
+
+    let parsedServices = [];
+    let parsedServicePrices = {};
+    if (services) {
+      try {
+        parsedServices = typeof services === 'string' ? JSON.parse(services) : services;
+      } catch (e) {
+        parsedServices = [];
+      }
+    }
+    if (servicePrices) {
+      try {
+        parsedServicePrices = typeof servicePrices === 'string' ? JSON.parse(servicePrices) : servicePrices;
+      } catch (e) {
+        parsedServicePrices = {};
+      }
+    }
 
     if (!name || !email || !password || !phone || !location) {
       return sendError(res, "Please fill all required fields", 400);
@@ -114,6 +151,8 @@ exports.signup = async (req, res) => {
             qualification: sanitize(qualification) || "",
             experience: parseInt(experience, 10) || 0,
             registrationNumber: registrationNumber?.trim() || "",
+            services: parsedServices,
+            servicePrices: parsedServicePrices,
           }
         : {}),
     });
@@ -174,12 +213,7 @@ exports.login = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.cookie("authToken", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("authToken", token, cookieOptions);
 
     return sendSuccess(
       res,
@@ -199,12 +233,7 @@ exports.login = async (req, res) => {
 };
 
 exports.logout = (req, res) => {
-  res.clearCookie("authToken", {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-  });
-
+  res.clearCookie("authToken", clearCookieOptions);
   return sendSuccess(res, null, "Logged out successfully");
 };
 

@@ -16,6 +16,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Save,
+  LocateFixed,
+  Loader2,
 } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Button from "@/components/ui/Button";
@@ -39,6 +41,47 @@ export default function NurseProfilePage() {
   const [saving, setSaving] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<string | null>(null);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [geoLoading, setGeoLoading] = useState(false);
+
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      setMessage({ type: "error", text: "Geolocation is not supported by your browser." });
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+            { headers: { "Accept-Language": "en" } }
+          );
+          const data = await res.json();
+          const address = data?.address || {};
+          const city =
+            address.city || address.town || address.village ||
+            address.county || address.state_district || "";
+          const state = address.state || "";
+          const locationStr = city && state ? `${city}, ${state}` : city || state || data?.display_name || "";
+          setFormData((prev) => ({ ...prev, location: locationStr }));
+        } catch {
+          setMessage({ type: "error", text: "Could not resolve location. Please enter manually." });
+        } finally {
+          setGeoLoading(false);
+        }
+      },
+      (err) => {
+        setGeoLoading(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setMessage({ type: "error", text: "Location access denied. Please allow or enter manually." });
+        } else {
+          setMessage({ type: "error", text: "Unable to detect location. Please enter manually." });
+        }
+      },
+      { timeout: 10000, maximumAge: 60000 }
+    );
+  };
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -188,15 +231,34 @@ export default function NurseProfilePage() {
                   />
                 </div>
 
-                <div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                  <input
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    placeholder="City / Area"
-                    className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-teal-500"
-                  />
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-semibold text-slate-700">
+                      Location
+                    </label>
+                    <button
+                      type="button"
+                      onClick={detectLocation}
+                      disabled={geoLoading}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-600 hover:text-teal-700 transition disabled:opacity-60"
+                    >
+                      {geoLoading ? (
+                        <><Loader2 className="w-3 h-3 animate-spin" /> Detecting...</>
+                      ) : (
+                        <><LocateFixed className="w-3 h-3" /> Use Current Location</>
+                      )}
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <input
+                      name="location"
+                      value={formData.location}
+                      onChange={handleChange}
+                      placeholder="City / Area"
+                      className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                  </div>
                 </div>
 
                 <div className="relative">

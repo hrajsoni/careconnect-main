@@ -14,6 +14,8 @@ import {
   Phone,
   MapPin,
   Calendar,
+  FileCheck2,
+  AlertTriangle,
 } from "lucide-react";
 import AdminGuard from "@/components/AdminGuard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -283,6 +285,52 @@ function AdminNursesPageContent() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Document Status */}
+                    {(() => {
+                      const hasBoth = nurse.idProof && nurse.licenseProof;
+                      const hasNeither = !nurse.idProof && !nurse.licenseProof;
+                      const missing: string[] = [];
+                      if (!nurse.idProof) missing.push("Aadhaar / ID Proof");
+                      if (!nurse.licenseProof) missing.push("Nursing License");
+
+                      return hasBoth ? (
+                        <div className="mt-4 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 flex items-center gap-3">
+                          <FileCheck2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                          <div>
+                            <p className="text-sm font-bold text-emerald-800">Documents Complete</p>
+                            <p className="text-xs text-emerald-600 mt-0.5">
+                              Aadhaar / ID Proof ✓ &nbsp;·&nbsp; Nursing License ✓
+                            </p>
+                          </div>
+                          <div className="ml-auto">
+                            <a href={`${API_BASE}/${nurse.idProof}`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-teal-600 hover:underline mr-3">View ID</a>
+                            <a href={`${API_BASE}/${nurse.licenseProof}`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-teal-600 hover:underline">View License</a>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mt-4 rounded-2xl bg-red-50 border border-red-200 p-4 flex items-start gap-3">
+                          <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-sm font-bold text-red-800">
+                              {hasNeither ? "Profile Incomplete — No Documents Uploaded" : "Profile Incomplete — Missing Documents"}
+                            </p>
+                            <p className="text-xs text-red-600 mt-1">
+                              Missing: {missing.join(" · ")}
+                            </p>
+                          </div>
+                          {/* Show links for whichever are uploaded */}
+                          <div className="text-right text-xs font-semibold space-y-1">
+                            {nurse.idProof && (
+                              <a href={`${API_BASE}/${nurse.idProof}`} target="_blank" rel="noreferrer" className="block text-teal-600 hover:underline">View ID ✓</a>
+                            )}
+                            {nurse.licenseProof && (
+                              <a href={`${API_BASE}/${nurse.licenseProof}`} target="_blank" rel="noreferrer" className="block text-teal-600 hover:underline">View License ✓</a>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     {nurse.rejectionReason && (
                       <div className="mt-4 rounded-2xl bg-rose-50 border border-rose-100 p-4">

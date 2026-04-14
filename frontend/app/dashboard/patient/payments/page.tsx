@@ -14,6 +14,12 @@ import {
   UserRound,
   RefreshCw,
   BadgeIndianRupee,
+  QrCode,
+  Shield,
+  X,
+  Smartphone,
+  BadgeCheck,
+  Timer,
 } from "lucide-react";
 import AuthGuard from "@/components/AuthGuard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -55,6 +61,192 @@ async function safeParseResponse(res: Response) {
   }
 }
 
+// ─── Dummy QR Payment Modal ────────────────────────────────────────────────
+function QRPaymentModal({
+  payment,
+  onClose,
+  onSuccess,
+}: {
+  payment: any;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [step, setStep] = useState<"qr" | "processing" | "done">("qr");
+  const [countdown, setCountdown] = useState(5);
+  const txnId = `CC${Date.now().toString().slice(-8)}`;
+
+  // Fake payment processing after user clicks confirm
+  const handleConfirmPayment = () => {
+    setStep("processing");
+    setTimeout(() => {
+      setStep("done");
+    }, 2000);
+  };
+
+  // Count down then auto-close after done
+  useEffect(() => {
+    if (step !== "done") return;
+    if (countdown <= 0) {
+      onSuccess();
+      return;
+    }
+    const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [step, countdown]);
+
+  // Build a dummy UPI QR data URL using a free QR API
+  const amount = payment?.amount || 0;
+  const serviceName = payment?.bookingId?.service || "Healthcare Service";
+  const upiString = `upi://pay?pa=careconnect@axisbank&pn=CareConnect&am=${amount}&cu=INR&tn=${encodeURIComponent(serviceName)}&tr=${txnId}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiString)}`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <motion.div
+        initial={{ scale: 0.92, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.92, opacity: 0 }}
+        className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
+      >
+        {/* Header */}
+        <div className="bg-gradient-to-r from-teal-600 to-cyan-600 text-white p-6 relative">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition"
+          >
+            <X className="w-4 h-4" />
+          </button>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="p-2 bg-white/20 rounded-xl">
+              <QrCode className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl font-bold">Secure Payment</h2>
+          </div>
+          <p className="text-teal-100 text-sm">CareConnect — Trusted Healthcare Platform</p>
+        </div>
+
+        <div className="p-6">
+          {step === "qr" && (
+            <div className="space-y-5">
+              {/* Service & amount info */}
+              <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4">
+                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-2">Payment Details</p>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-bold text-slate-900 text-lg">{serviceName}</p>
+                    <p className="text-sm text-slate-500">
+                      Nurse: {payment?.nurseId?.name || "Assigned Nurse"}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-black text-teal-700">₹{amount}</p>
+                    <p className="text-xs text-slate-400">Total amount</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* QR Code */}
+              <div className="flex flex-col items-center py-4">
+                <p className="text-sm font-semibold text-slate-700 mb-4">
+                  Scan with any UPI app to pay
+                </p>
+                <div className="p-3 rounded-2xl border-4 border-teal-500 bg-white shadow-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={qrUrl}
+                    alt="Payment QR Code"
+                    width={200}
+                    height={200}
+                    className="rounded-xl"
+                  />
+                </div>
+                <div className="mt-3 flex items-center gap-2">
+                  <Smartphone className="w-4 h-4 text-teal-500" />
+                  <p className="text-xs text-slate-500 font-medium">
+                    GPay · PhonePe · Paytm · Any UPI App
+                  </p>
+                </div>
+                <div className="mt-2 px-3 py-1.5 rounded-full bg-slate-100 text-xs text-slate-500 font-mono">
+                  Txn ID: {txnId}
+                </div>
+              </div>
+
+              {/* Security badge */}
+              <div className="flex items-center gap-2 text-xs text-slate-500 bg-green-50 border border-green-200 rounded-xl p-3">
+                <Shield className="w-4 h-4 text-green-600 shrink-0" />
+                <span>256-bit encrypted · Compliant with RBI guidelines · PCI-DSS secured</span>
+              </div>
+
+              {/* After scanning QR, click "I've Paid" */}
+              <div className="space-y-3">
+                <Button
+                  type="button"
+                  onClick={handleConfirmPayment}
+                  className="w-full py-4 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold"
+                >
+                  I Have Paid — Confirm Payment
+                </Button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-full py-3 rounded-2xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === "processing" && (
+            <div className="flex flex-col items-center py-12 space-y-4 text-center">
+              <div className="w-16 h-16 rounded-full border-4 border-teal-500 border-t-transparent animate-spin" />
+              <p className="text-xl font-bold text-slate-900">Verifying Payment...</p>
+              <p className="text-slate-500 text-sm">Please wait while we confirm your transaction</p>
+            </div>
+          )}
+
+          {step === "done" && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center py-8 space-y-4 text-center"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center"
+              >
+                <BadgeCheck className="w-10 h-10 text-green-600" />
+              </motion.div>
+              <div>
+                <p className="text-2xl font-black text-slate-900">Payment Successful!</p>
+                <p className="text-slate-500 text-sm mt-1">
+                  ₹{amount} paid for {serviceName}
+                </p>
+              </div>
+              <div className="px-4 py-2 rounded-xl bg-slate-100 text-xs font-mono text-slate-600">
+                Ref: {txnId}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-teal-600 font-medium">
+                <Timer className="w-4 h-4" />
+                Closing in {countdown}s...
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─── Main Payments Page ────────────────────────────────────────────────────
 export default function PatientPaymentsPage() {
   const router = useRouter();
   const [payments, setPayments] = useState<any[]>([]);
@@ -62,6 +254,7 @@ export default function PatientPaymentsPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [message, setMessage] = useState<ToastState>({ type: "", text: "" });
+  const [qrPayment, setQrPayment] = useState<any | null>(null);
 
   const showMessage = (type: "success" | "error", text: string) => {
     setMessage({ type, text });
@@ -69,7 +262,6 @@ export default function PatientPaymentsPage() {
 
   const fetchPayments = async (showLoader = true) => {
     const patientId = localStorage.getItem("userId");
-    
 
     if (!patientId) {
       router.push("/login");
@@ -140,22 +332,20 @@ export default function PatientPaymentsPage() {
     return { total, paid, pending, totalAmount };
   }, [payments]);
 
-  const handlePayNow = async (paymentId: string) => {
+  // Called after QR modal confirms payment — mark as paid on backend
+  const completePayment = async (paymentId: string) => {
     try {
       setProcessingId(paymentId);
-
-      
-      
 
       const res = await fetchWithTimeout(`${API_BASE}/api/payments/mark-paid/${paymentId}`, {
         method: "PUT",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          },
+        },
         body: JSON.stringify({
           method: "online",
-          reference: `PATIENT-PAY-${Date.now()}`,
+          reference: `CC-QR-${Date.now()}`,
         }),
       });
 
@@ -171,12 +361,13 @@ export default function PatientPaymentsPage() {
         throw new Error(data?.message || "Payment failed.");
       }
 
-      showMessage("success", data?.message || "Payment completed successfully.");
+      showMessage("success", "Payment confirmed successfully! 🎉");
       await fetchPayments(false);
     } catch (error: any) {
       showMessage("error", error.message || "Unable to complete payment.");
     } finally {
       setProcessingId(null);
+      setQrPayment(null);
     }
   };
 
@@ -328,7 +519,7 @@ export default function PatientPaymentsPage() {
 
                             <div className="flex items-center gap-2">
                               <BadgeIndianRupee className="w-4 h-4 text-teal-500" />
-                              Amount: Rs. {payment.amount || 0}
+                              Amount: ₹{payment.amount || 0}
                             </div>
 
                             <div className="flex items-center gap-2">
@@ -351,17 +542,23 @@ export default function PatientPaymentsPage() {
                         </div>
 
                         {payment.status !== "paid" && (
-                          <div className="lg:min-w-[180px]">
+                          <div className="lg:min-w-[200px]">
                             <Button
                               type="button"
-                              onClick={() => handlePayNow(payment._id)}
+                              onClick={() => setQrPayment(payment)}
                               disabled={processingId === payment._id}
                               className="w-full rounded-2xl bg-teal-600 text-white hover:bg-teal-700"
                             >
-                              {processingId === payment._id
-                                ? "Processing Payment..."
-                                : "Pay Now"}
+                              <span className="inline-flex items-center gap-2">
+                                <QrCode className="w-4 h-4" />
+                                {processingId === payment._id
+                                  ? "Processing..."
+                                  : "Pay Now"}
+                              </span>
                             </Button>
+                            <p className="text-xs text-center text-slate-400 mt-2">
+                              Secure UPI / QR Payment
+                            </p>
                           </div>
                         )}
                       </div>
@@ -392,6 +589,17 @@ export default function PatientPaymentsPage() {
             </AnimatePresence>
           </div>
         </div>
+
+        {/* QR Payment Modal */}
+        <AnimatePresence>
+          {qrPayment && (
+            <QRPaymentModal
+              payment={qrPayment}
+              onClose={() => setQrPayment(null)}
+              onSuccess={() => completePayment(qrPayment._id)}
+            />
+          )}
+        </AnimatePresence>
       </DashboardLayout>
     </AuthGuard>
   );

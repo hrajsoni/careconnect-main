@@ -16,6 +16,8 @@ import {
   CreditCard,
   HeartHandshake,
   Car,
+  Ambulance,
+  Building2,
 } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { clearStoredAuth } from "@/utils/session";
@@ -47,6 +49,18 @@ export default function DashboardLayout({
         label: "Admin Dashboard",
         icon: LayoutDashboard,
         path: "/dashboard/admin",
+        role: "admin",
+      },
+      {
+        label: "Services Content",
+        icon: FileText,
+        path: "/dashboard/admin/services",
+        role: "admin",
+      },
+      {
+        label: "Doctors Content",
+        icon: UserCheck,
+        path: "/dashboard/admin/doctors",
         role: "admin",
       },
       {
@@ -83,6 +97,12 @@ export default function DashboardLayout({
         label: "Care Assistant Requests",
         icon: ClipboardList,
         path: "/dashboard/admin/care-assistant-requests",
+        role: "admin",
+      },
+      {
+        label: "Ambulance Requests",
+        icon: Ambulance,
+        path: "/dashboard/admin/ambulance",
         role: "admin",
       },
       {
@@ -134,6 +154,18 @@ export default function DashboardLayout({
         role: "patient",
       },
       {
+        label: "Services Catalog",
+        icon: ClipboardList,
+        path: "/dashboard/patient/services",
+        role: "patient",
+      },
+      {
+        label: "Connect Doctor",
+        icon: HeartHandshake,
+        path: "/dashboard/patient/connect-doctor",
+        role: "patient",
+      },
+      {
         label: "My Bookings",
         icon: ClipboardList,
         path: "/dashboard/patient/bookings",
@@ -155,6 +187,18 @@ export default function DashboardLayout({
         label: "Payments",
         icon: CreditCard,
         path: "/dashboard/patient/payments",
+        role: "patient",
+      },
+      {
+        label: "Book Ambulance",
+        icon: Ambulance,
+        path: "/book-ambulance",
+        role: "patient",
+      },
+      {
+        label: "Hospital ICU System",
+        icon: Building2,
+        path: "/hospital-system",
         role: "patient",
       },
       {

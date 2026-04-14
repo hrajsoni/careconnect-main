@@ -26,9 +26,20 @@ const paymentSchema = new mongoose.Schema(
       default: 0,
     },
 
+    // Revenue split: nurse receives 70%, platform retains 30%
+    nurseEarnings: {
+      type: Number,
+      default: 0,
+    },
+
+    platformFee: {
+      type: Number,
+      default: 0,
+    },
+
     method: {
       type: String,
-      enum: ["online", "cash", "manual"],
+      enum: ["online", "cash", "manual", "upi", "qr"],
       default: "online",
     },
 

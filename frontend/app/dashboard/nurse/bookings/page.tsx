@@ -19,6 +19,8 @@ import {
   FolderOpen,
   RefreshCw,
   Phone,
+  Ambulance,
+  Building2,
 } from "lucide-react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import Button from "@/components/ui/Button";
@@ -564,6 +566,36 @@ export default function NurseBookingsPage() {
                               >
                                 Add / Edit Outcome
                               </Button>
+
+                              {/* Ambulance options — for active/in-progress bookings */}
+                              {(booking.status === "in_progress" || booking.status === "accepted") && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      router.push(
+                                        `/book-ambulance?bookingId=${booking._id}&patientId=${booking.patientId?._id || ""}`
+                                      )
+                                    }
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-red-500 to-rose-600 text-white font-semibold text-sm hover:from-red-600 hover:to-rose-700 transition shadow-md shadow-red-200"
+                                  >
+                                    <Ambulance className="w-4 h-4" />
+                                    Book Ambulance for Patient
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      router.push(
+                                        `/hospital-system?bookingId=${booking._id}&patientId=${booking.patientId?._id || ""}`
+                                      )
+                                    }
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl border border-teal-200 text-teal-700 font-semibold text-sm hover:bg-teal-50 transition"
+                                  >
+                                    <Building2 className="w-4 h-4" />
+                                    Hospital ICU Beds
+                                  </button>
+                                </>
+                              )}
                             </div>
                           </div>
 

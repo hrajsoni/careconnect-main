@@ -207,10 +207,21 @@ exports.markPaymentAsPaid = async (req, res) => {
       return sendError(res, `Payment cannot be marked as paid — current status is '${payment.status}'`, 400);
     }
 
+    // ============================================================
+    // Revenue split: 70% to nurse, 30% platform fee
+    // Stored in the payment record for auditability
+    // ============================================================
+    const NURSE_SHARE = 0.70;
+    const PLATFORM_SHARE = 0.30;
+    const nurseEarnings = Math.round(payment.amount * NURSE_SHARE * 100) / 100;
+    const platformFee   = Math.round(payment.amount * PLATFORM_SHARE * 100) / 100;
+
     payment.status = "paid";
-    payment.method = method || payment.method || "manual";
-    payment.reference = reference || `PAY-${Date.now()}`;
+    payment.method = method || payment.method || "online";
+    payment.reference = reference || `CC-${Date.now()}`;
     payment.paidAt = new Date();
+    payment.nurseEarnings = nurseEarnings;
+    payment.platformFee = platformFee;
 
     await payment.save();
 
@@ -236,12 +247,18 @@ exports.markPaymentAsPaid = async (req, res) => {
 
     await notifyPaymentMarkedPaid(updatedPayment);
 
-    return sendSuccess(res, { payment: formatPayment(updatedPayment), booking }, "Payment marked as paid successfully");
+    return sendSuccess(res, {
+      payment: formatPayment(updatedPayment),
+      booking,
+      nurseEarnings,
+      platformFee,
+    }, "Payment marked as paid successfully");
   } catch (error) {
     console.error("MARK PAYMENT AS PAID ERROR:", error);
     return sendError(res, "Server error", 500);
   }
 };
+
 
 /*
 ========================================

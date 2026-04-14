@@ -25,6 +25,10 @@ import {
   CheckCircle2,
   AlertCircle,
   Camera,
+  LocateFixed,
+  Loader2,
+  Ambulance,
+  Building2,
 } from "lucide-react";
 import AuthGuard from "@/components/AuthGuard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -108,6 +112,7 @@ export default function PatientDashboard() {
 
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState("");
+  const [geoLoading, setGeoLoading] = useState(false);
 
   // ============================================================
   // FIXED: Removed PII from localStorage reads
@@ -244,6 +249,46 @@ export default function PatientDashboard() {
     setSelectedPhoto(null);
     setPhotoPreview(user?.photo ? profilePhotoUrl : "");
     setEditOpen(true);
+  };
+
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      showMessage("error", "Geolocation is not supported by your browser.");
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+            { headers: { "Accept-Language": "en" } }
+          );
+          const data = await res.json();
+          const address = data?.address || {};
+          const city =
+            address.city || address.town || address.village ||
+            address.county || address.state_district || "";
+          const state = address.state || "";
+          const locationStr = city && state ? `${city}, ${state}` : city || state || data?.display_name || "";
+          setEditForm((prev) => ({ ...prev, location: locationStr }));
+        } catch {
+          showMessage("error", "Could not resolve location. Please enter manually.");
+        } finally {
+          setGeoLoading(false);
+        }
+      },
+      (err) => {
+        setGeoLoading(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          showMessage("error", "Location access denied. Please allow or enter manually.");
+        } else {
+          showMessage("error", "Unable to detect location. Please enter manually.");
+        }
+      },
+      { timeout: 10000, maximumAge: 60000 }
+    );
   };
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -398,6 +443,22 @@ export default function PatientDashboard() {
       icon: <CreditCard className="w-6 h-6" />,
       action: () => router.push("/dashboard/patient/payments"),
       color: "from-emerald-500 to-teal-500",
+    },
+    {
+      title: "Book Ambulance",
+      description:
+        "Critical situation? Dispatch an ambulance immediately and book ICU bed at a nearby hospital.",
+      icon: <Ambulance className="w-6 h-6" />,
+      action: () => router.push("/book-ambulance"),
+      color: "from-red-500 to-rose-600",
+    },
+    {
+      title: "Hospital ICU System",
+      description:
+        "Browse real-time ICU and emergency bed availability at nearby hospitals for critical patients.",
+      icon: <Building2 className="w-6 h-6" />,
+      action: () => router.push("/hospital-system"),
+      color: "from-orange-500 to-amber-500",
     },
   ];
 
@@ -664,7 +725,7 @@ export default function PatientDashboard() {
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-2 xl:grid-cols-5 gap-6">
+              <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
                 {quickActions.map((item, index) => (
                   <motion.div
                     key={item.title}
@@ -836,17 +897,34 @@ export default function PatientDashboard() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Location
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  value={editForm.location}
-                  onChange={handleEditChange}
-                  placeholder="City / Area"
-                  className="w-full px-4 py-4 rounded-2xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-teal-500"
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-semibold text-slate-700">
+                    Location
+                  </label>
+                  <button
+                    type="button"
+                    onClick={detectLocation}
+                    disabled={geoLoading}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-600 hover:text-teal-700 transition disabled:opacity-60"
+                  >
+                    {geoLoading ? (
+                      <><Loader2 className="w-3 h-3 animate-spin" /> Detecting...</>
+                    ) : (
+                      <><LocateFixed className="w-3 h-3" /> Use Current Location</>
+                    )}
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="location"
+                    value={editForm.location}
+                    onChange={handleEditChange}
+                    placeholder="City / Area"
+                    className="w-full px-4 py-4 rounded-2xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                  <MapPin className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
+                </div>
               </div>
             </div>
 

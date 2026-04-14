@@ -71,7 +71,7 @@ const completedBookings = await Booking.countDocuments({ status: "completed" });
 
 const totalPayments = await Payment.countDocuments({});
 const paidPayments = await Payment.find({ status: "paid" });
-const totalRevenue = paidPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+const totalRevenue = paidPayments.reduce((sum, p) => sum + (p.platformFee || 0), 0);
 
 return res.status(200).json({
 success: true,

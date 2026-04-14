@@ -268,9 +268,47 @@ export default function PatientCareAssistantRequestsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      Pickup Location
-                    </label>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-semibold text-slate-700">
+                        Pickup Location
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(
+                              async (position) => {
+                                try {
+                                  const { latitude, longitude } = position.coords;
+                                  const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                                  const data = await response.json();
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    pickupLocation: data.display_name || `${latitude}, ${longitude}`
+                                  }));
+                                  showMessage("success", "Location detected successfully");
+                                } catch (error) {
+                                  const { latitude, longitude } = position.coords;
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    pickupLocation: `${latitude}, ${longitude}`
+                                  }));
+                                }
+                              },
+                              (error) => {
+                                showMessage("error", "Unable to detect location. Please type manually.");
+                              }
+                            );
+                          } else {
+                            showMessage("error", "Geolocation is not supported by your browser.");
+                          }
+                        }}
+                        className="text-xs font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1 bg-teal-50 px-2 py-1 rounded-md"
+                      >
+                        <MapPin className="w-3 h-3" />
+                        Use Current
+                      </button>
+                    </div>
                     <input
                       type="text"
                       name="pickupLocation"

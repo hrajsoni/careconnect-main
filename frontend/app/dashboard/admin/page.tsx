@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   ArrowRight,
   HeartHandshake,
+  Ambulance,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import AdminGuard from "@/components/AdminGuard";
@@ -389,6 +390,14 @@ export default function AdminDashboard() {
       bg: "bg-green-50",
       onClick: () => router.push("/dashboard/admin/payments"),
     },
+    {
+      label: "Ambulance Requests",
+      count: "View",
+      icon: Ambulance,
+      color: "text-red-600",
+      bg: "bg-red-50",
+      onClick: () => router.push("/dashboard/admin/ambulance"),
+    },
   ];
 
   return (
@@ -524,13 +533,13 @@ export default function AdminDashboard() {
                         </div>
                       </div>
 
-                      {(provider.idProof || provider.licenseProof) && (
+                      {(provider.idProof || provider.licenseProof) ? (
                         <div className="mt-6 pt-6 border-t border-slate-100 flex flex-wrap gap-4">
                           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider w-full flex-shrink-0">
                             Verification Documents
                           </p>
 
-                          {provider.idProof && (
+                          {provider.idProof ? (
                             <button
                               onClick={() =>
                                 setPreviewUrl(`${API_BASE}/${provider.idProof}`)
@@ -538,11 +547,15 @@ export default function AdminDashboard() {
                               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-white hover:shadow-sm hover:border-teal-300 transition"
                             >
                               <FileText className="w-4 h-4 text-teal-600" />
-                              View ID Proof
+                              View ID Proof ✓
                             </button>
+                          ) : (
+                            <span className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 border border-red-200 text-sm font-semibold text-red-600">
+                              ⚠ Aadhaar / ID Proof — Not Uploaded
+                            </span>
                           )}
 
-                          {provider.licenseProof && (
+                          {provider.licenseProof ? (
                             <button
                               onClick={() =>
                                 setPreviewUrl(`${API_BASE}/${provider.licenseProof}`)
@@ -550,9 +563,25 @@ export default function AdminDashboard() {
                               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-white hover:shadow-sm hover:border-teal-300 transition"
                             >
                               <FileText className="w-4 h-4 text-teal-600" />
-                              View License
+                              View License ✓
                             </button>
+                          ) : (
+                            <span className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 border border-red-200 text-sm font-semibold text-red-600">
+                              ⚠ Nursing License — Not Uploaded
+                            </span>
                           )}
+                        </div>
+                      ) : (
+                        <div className="mt-6 pt-6 border-t border-slate-100">
+                          <div className="rounded-2xl bg-red-50 border border-red-200 p-4 flex items-center gap-3">
+                            <span className="text-xl">⚠️</span>
+                            <div>
+                              <p className="text-sm font-bold text-red-800">No Documents Uploaded</p>
+                              <p className="text-xs text-red-600 mt-0.5">
+                                This nurse has not uploaded any verification documents (Aadhaar / Nursing License).
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </motion.div>

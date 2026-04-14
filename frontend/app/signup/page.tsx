@@ -18,6 +18,8 @@ import {
   Camera,
   HeartHandshake,
   FileText,
+  LocateFixed,
+  Loader2,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 
@@ -65,9 +67,13 @@ export default function SignupPage() {
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState("");
 
+  const [dbServices, setDbServices] = useState<any[]>([]);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
 
   const passwordRule =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/;
@@ -97,7 +103,20 @@ export default function SignupPage() {
       setCheckingAuth(false);
     };
 
+    const fetchServices = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/services`);
+        const data = await res.json();
+        if (data.success && data.data) {
+          setDbServices(data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch services", err);
+      }
+    };
+
     checkAuth();
+    fetchServices();
   }, [router]);
 
   useEffect(() => {
@@ -131,6 +150,51 @@ export default function SignupPage() {
       ...prev,
       role,
     }));
+  };
+
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by your browser.");
+      return;
+    }
+    setGeoLoading(true);
+    setError("");
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+            { headers: { "Accept-Language": "en" } }
+          );
+          const data = await res.json();
+          const address = data?.address || {};
+          const city =
+            address.city ||
+            address.town ||
+            address.village ||
+            address.county ||
+            address.state_district ||
+            "";
+          const state = address.state || "";
+          const locationStr = city && state ? `${city}, ${state}` : city || state || data?.display_name || "";
+          setFormData((prev) => ({ ...prev, location: locationStr }));
+        } catch {
+          setError("Could not determine your location. Please enter it manually.");
+        } finally {
+          setGeoLoading(false);
+        }
+      },
+      (err) => {
+        setGeoLoading(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setError("Location access denied. Please allow access or enter manually.");
+        } else {
+          setError("Unable to detect location. Please enter it manually.");
+        }
+      },
+      { timeout: 10000, maximumAge: 60000 }
+    );
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -191,6 +255,15 @@ export default function SignupPage() {
           "registrationNumber",
           formData.registrationNumber.trim()
         );
+        if (formData.role === "nurse" && selectedServices.length > 0) {
+          payload.append("services", JSON.stringify(selectedServices));
+          const pricesMap: Record<string, number> = {};
+          selectedServices.forEach(id => {
+            const svc = dbServices.find(s => s._id === id);
+            if (svc) pricesMap[id] = svc.price;
+          });
+          payload.append("servicePrices", JSON.stringify(pricesMap));
+        }
       }
 
       if (selectedPhoto) {
@@ -466,9 +539,21 @@ export default function SignupPage() {
                 value={formData.location}
                 onChange={handleChange}
                 required
-                className="w-full pl-12 pr-4 py-4 border border-slate-200 rounded-2xl bg-white focus:ring-2 focus:ring-teal-400 outline-none"
+                className="w-full pl-12 pr-36 py-4 border border-slate-200 rounded-2xl bg-white focus:ring-2 focus:ring-teal-400 outline-none"
               />
               <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+              <button
+                type="button"
+                onClick={detectLocation}
+                disabled={geoLoading}
+                className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 text-xs font-semibold hover:bg-teal-100 transition disabled:opacity-60"
+              >
+                {geoLoading ? (
+                  <><Loader2 className="w-3 h-3 animate-spin" /> Locating...</>
+                ) : (
+                  <><LocateFixed className="w-3 h-3" /> Use GPS</>
+                )}
+              </button>
             </div>
           </div>
 
@@ -527,6 +612,34 @@ export default function SignupPage() {
                   className="w-full pl-12 pr-4 py-4 border border-slate-200 rounded-2xl bg-white focus:ring-2 focus:ring-teal-400 outline-none"
                 />
                 <ShieldPlus className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+              </div>
+            </div>
+          )}
+
+          {formData.role === "nurse" && dbServices.length > 0 && (
+            <div className="space-y-4 rounded-2xl border border-teal-200 bg-teal-50 p-5">
+              <p className="text-sm font-semibold text-teal-900 mb-2">Select Services You Provide & See Pricing</p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {dbServices.map(service => (
+                  <label key={service._id} className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition ${selectedServices.includes(service._id) ? 'border-teal-500 bg-white shadow-sm' : 'border-transparent hover:bg-teal-100/50'}`}>
+                    <input
+                      type="checkbox"
+                      className="mt-1 w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500"
+                      checked={selectedServices.includes(service._id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedServices(prev => [...prev, service._id]);
+                        } else {
+                          setSelectedServices(prev => prev.filter(id => id !== service._id));
+                        }
+                      }}
+                    />
+                    <div>
+                      <div className="font-semibold text-sm text-slate-800">{service.name}</div>
+                      <div className="text-xs text-teal-700 font-bold mt-1">₹{service.price}</div>
+                    </div>
+                  </label>
+                ))}
               </div>
             </div>
           )}

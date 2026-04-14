@@ -4,6 +4,7 @@ import { fetchWithTimeout } from '@/utils/fetchWithTimeout';
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { getFixedPrice } from '@/utils/pricing';
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShieldCheck,
@@ -21,6 +22,8 @@ import {
   CreditCard,
   TimerReset,
   CalendarClock,
+  LocateFixed,
+  Loader2,
 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { clearStoredAuth } from "@/utils/session";
@@ -95,6 +98,7 @@ export default function NurseDetailPage() {
   const [loading, setLoading] = useState(true);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [geoLoading, setGeoLoading] = useState(false);
 
   const [bookingData, setBookingData] = useState({
     service: "",
@@ -144,18 +148,14 @@ export default function NurseDetailPage() {
     return () => clearTimeout(timer);
   }, [message]);
 
-  const servicePrices = useMemo(() => {
-    return nurse?.servicePrices || {};
-  }, [nurse]);
-
   const availability = useMemo(() => {
     return nurse?.availability || {};
   }, [nurse]);
 
   const selectedServicePrice = useMemo(() => {
-    if (!bookingData.service || !servicePrices) return null;
-    return servicePrices?.[bookingData.service] ?? null;
-  }, [bookingData.service, servicePrices]);
+    if (!bookingData.service) return null;
+    return getFixedPrice(bookingData.service);
+  }, [bookingData.service]);
 
   const availableDays = useMemo(() => {
     return Array.isArray(availability?.availableDays)
@@ -192,6 +192,52 @@ export default function NurseDetailPage() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const detectCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setMessage({ type: "error", text: "Geolocation is not supported by your browser." });
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`,
+            { headers: { "Accept-Language": "en" } }
+          );
+          const data = await res.json();
+          const a = data?.address || {};
+          // Build a full, precise address from available parts
+          const parts = [
+            a.house_number,
+            a.road || a.pedestrian || a.footway,
+            a.neighbourhood || a.suburb || a.quarter,
+            a.city || a.town || a.village || a.county,
+            a.state_district,
+            a.state,
+            a.postcode,
+          ].filter(Boolean);
+          const locationStr = parts.length >= 2 ? parts.join(", ") : (data?.display_name || "");
+          setBookingData((prev) => ({ ...prev, location: locationStr }));
+        } catch {
+          setMessage({ type: "error", text: "Could not resolve location. Please enter manually." });
+        } finally {
+          setGeoLoading(false);
+        }
+      },
+      (err) => {
+        setGeoLoading(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setMessage({ type: "error", text: "Location access denied. Please enter manually." });
+        } else {
+          setMessage({ type: "error", text: "Unable to detect location. Please enter manually." });
+        }
+      },
+      { timeout: 10000, maximumAge: 0, enableHighAccuracy: true }
+    );
   };
 
   const createBooking = async () => {
@@ -281,11 +327,18 @@ export default function NurseDetailPage() {
 
       setMessage({
         type: "success",
-        text: "Booking created successfully. Redirecting...",
+        text: "Booking created successfully. Redirecting to payment...",
       });
 
+      const paymentId = data.data?.payment?._id || data.payment?._id;
+      const paymentAmount = bookingData.service ? getFixedPrice(bookingData.service) : "";
+
       setTimeout(() => {
-        router.push("/dashboard/patient/bookings");
+        if (paymentId) {
+          router.push(`/dummy-payment?paymentId=${paymentId}&amount=${paymentAmount}`);
+        } else {
+          router.push("/dashboard/patient/bookings");
+        }
       }, 1500);
     } catch (err: any) {
       setMessage({
@@ -423,7 +476,7 @@ export default function NurseDetailPage() {
 
                       <div className="shrink-0 text-sm font-bold text-teal-700 bg-white border border-teal-100 rounded-xl px-3 py-2 flex items-center gap-1">
                         <IndianRupee className="w-4 h-4" />
-                        {servicePrices?.[service] ?? "N/A"}
+                        {getFixedPrice(service)}
                       </div>
                     </div>
                   </div>
@@ -587,16 +640,33 @@ export default function NurseDetailPage() {
                 </div>
               )}
 
-              <div className="relative">
-                <MapPin className="absolute left-4 top-4 text-slate-400 w-5 h-5" />
-                <input
-                  type="text"
-                  name="location"
-                  value={bookingData.location}
-                  onChange={handleBookingChange}
-                  placeholder="Service address / area"
-                  className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-teal-500"
-                />
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-semibold text-slate-700">Service Address</label>
+                  <button
+                    type="button"
+                    onClick={detectCurrentLocation}
+                    disabled={geoLoading}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-600 hover:text-teal-700 transition disabled:opacity-60"
+                  >
+                    {geoLoading ? (
+                      <><Loader2 className="w-3 h-3 animate-spin" /> Detecting...</>
+                    ) : (
+                      <><LocateFixed className="w-3 h-3" /> Use Current Location</>
+                    )}
+                  </button>
+                </div>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-4 text-slate-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    name="location"
+                    value={bookingData.location}
+                    onChange={handleBookingChange}
+                    placeholder="Service address / area"
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                </div>
               </div>
 
               <div className="relative">

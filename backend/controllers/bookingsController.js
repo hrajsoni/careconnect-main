@@ -5,6 +5,7 @@ const User = require("../models/User");
 const sendEmail = require("../utils/sendEmail");
 const ROLES = require("../constants/roles");
 const { sendSuccess, sendError } = require("../utils/response");
+const { getFixedPrice } = require("../constants/pricing");
 const {
   genericBookingTemplate,
   paymentTemplate,
@@ -380,12 +381,7 @@ exports.createBooking = async (req, res) => {
       return sendError(res, "This slot is already booked. Please select another time.", 400);
     }
 
-    const rawPrice =
-      nurse.servicePrices && typeof nurse.servicePrices.get === "function"
-        ? nurse.servicePrices.get(service)
-        : nurse.servicePrices?.[service];
-
-    const paymentAmount = Number(rawPrice) || 0;
+    const paymentAmount = getFixedPrice(service);
 
     const booking = new Booking({
       patientId,

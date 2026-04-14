@@ -18,6 +18,8 @@ import {
   AlertCircle,
   Pencil,
   XCircle,
+  Ambulance,
+  Building2,
 } from "lucide-react";
 import AuthGuard from "@/components/AuthGuard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -193,44 +195,12 @@ export default function PatientBookingsPage() {
       }
 
       const payment = paymentData?.data || paymentData;
-
-      const markPaidRes = await fetchWithTimeout(
-        `${API_BASE}/api/payments/mark-paid/${payment._id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            method: "online",
-            reference: `PATIENT-PAY-${Date.now()}`,
-          }),
-        }
-      );
-
-      if (markPaidRes.status === 401) {
-        clearStoredAuth();
-        router.push("/login");
-        return;
-      }
-
-      const markPaidData = await safeParseResponse(markPaidRes);
-
-      if (!markPaidRes.ok) {
-        throw new Error(markPaidData?.message || "Unable to complete payment");
-      }
-
-      setMessage({
-        type: "success",
-        text: "Payment completed successfully.",
-      });
-
-      fetchBookings();
+      
+      router.push(`/dummy-payment?paymentId=${payment._id}&amount=${payment.amount}`);
     } catch (error: any) {
       setMessage({
         type: "error",
-        text: error.message || "Payment failed.",
+        text: error.message || "Unable to proceed to payment.",
       });
     } finally {
       setPayingBookingId(null);
@@ -394,7 +364,7 @@ export default function PatientBookingsPage() {
         </div>
       )}
 
-      {(booking.status === "pending" || booking.status === "accepted") && (
+      {(booking.status === "pending" || booking.status === "accepted" || booking.status === "in_progress") && (
         <div className="mt-5 flex flex-wrap gap-3">
           {booking.status === "accepted" && booking.paymentStatus !== "paid" && (
             <Button
@@ -407,27 +377,58 @@ export default function PatientBookingsPage() {
             </Button>
           )}
 
-          <Button
-            type="button"
-            variant="outline"
-            className="rounded-2xl"
-            onClick={() => openEditModal(booking)}
-            disabled={processingBookingId === booking._id}
-          >
-            <Pencil className="w-4 h-4 mr-2" />
-            Modify Booking
-          </Button>
+          {(booking.status === "pending" || booking.status === "accepted") && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-2xl"
+                onClick={() => openEditModal(booking)}
+                disabled={processingBookingId === booking._id}
+              >
+                <Pencil className="w-4 h-4 mr-2" />
+                Modify Booking
+              </Button>
 
-          <Button
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-2xl text-red-600 border-red-200 hover:bg-red-50"
+                onClick={() => handleCancelBooking(booking._id)}
+                disabled={processingBookingId === booking._id}
+              >
+                <XCircle className="w-4 h-4 mr-2" />
+                Cancel Booking
+              </Button>
+            </>
+          )}
+
+          {/* Ambulance button — always visible for active bookings */}
+          <button
             type="button"
-            variant="outline"
-            className="rounded-2xl text-red-600 border-red-200 hover:bg-red-50"
-            onClick={() => handleCancelBooking(booking._id)}
-            disabled={processingBookingId === booking._id}
+            onClick={() =>
+              router.push(
+                `/book-ambulance?bookingId=${booking._id}&patientId=${booking.patientId?._id || booking.patientId || ""}`
+              )
+            }
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-red-500 to-rose-600 text-white font-semibold text-sm hover:from-red-600 hover:to-rose-700 transition shadow-md shadow-red-200"
           >
-            <XCircle className="w-4 h-4 mr-2" />
-            Cancel Booking
-          </Button>
+            <Ambulance className="w-4 h-4" />
+            Book Ambulance
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              router.push(
+                `/hospital-system?bookingId=${booking._id}&patientId=${booking.patientId?._id || booking.patientId || ""}`
+              )
+            }
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl border border-teal-200 text-teal-700 font-semibold text-sm hover:bg-teal-50 transition"
+          >
+            <Building2 className="w-4 h-4" />
+            View Hospital ICU Beds
+          </button>
         </div>
       )}
 
