@@ -12,13 +12,21 @@ export async function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
+  const headers = { ...(options.headers || {}) };
+
+  // Add Bearer token fallback for cross-origin authentication
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('token');
+    if (token && !headers['Authorization']) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+
   try {
     const res = await fetch(url, {
       ...options,
       credentials: options.credentials || 'include',
-      headers: {
-        ...(options.headers || {}),
-      },
+      headers,
       signal: controller.signal,
     });
     clearTimeout(timer);

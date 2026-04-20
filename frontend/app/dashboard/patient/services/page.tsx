@@ -5,6 +5,8 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import AuthGuard from "@/components/AuthGuard";
 import { CheckCircle2 } from "lucide-react";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+
 export default function PatientServicesPage() {
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -12,7 +14,7 @@ export default function PatientServicesPage() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/services");
+        const res = await fetch(`${API_BASE}/api/services`);
         const data = await res.json();
         if (data.success) {
           setServices(data.data);
@@ -31,7 +33,7 @@ export default function PatientServicesPage() {
       <DashboardLayout>
         <div className="p-6 max-w-6xl mx-auto">
           <h1 className="text-3xl font-bold text-slate-800 mb-8">Available Care Services</h1>
-          
+
           {loading ? (
             <p>Loading...</p>
           ) : (
@@ -43,7 +45,7 @@ export default function PatientServicesPage() {
                     Pricing starts at ₹{svc.price}
                   </div>
                   <p className="text-slate-600 mb-4">{svc.description}</p>
-                  
+
                   {svc.features && svc.features.length > 0 && (
                     <div className="space-y-2 mt-4 border-t pt-4">
                       <p className="font-semibold text-sm text-slate-800">Included Features:</p>

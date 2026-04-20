@@ -3,9 +3,20 @@ type ApiErrorShape = {
 };
 
 export async function safeFetch(url: string, options?: RequestInit) {
+  const headers: Record<string, string> = { ...(options?.headers as Record<string, string> || {}) };
+
+  // Add Bearer token fallback for cross-origin authentication
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("token");
+    if (token && !headers["Authorization"]) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+  }
+
   const res = await fetch(url, {
     credentials: "include",
     ...options,
+    headers,
   });
 
   const contentType = res.headers.get("content-type") || "";

@@ -7,19 +7,21 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import AuthGuard from "@/components/AuthGuard";
 import { Stethoscope, Calendar, CreditCard, CheckCircle } from "lucide-react";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+
 export default function ConnectDoctorPage() {
   const router = useRouter();
   const [doctors, setDoctors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSpeciality, setSelectedSpeciality] = useState("All");
-  
+
   const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
   const [step, setStep] = useState(1); // 1: list, 2: details, 3: payment succ
 
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/doctors");
+        const res = await fetch(`${API_BASE}/api/doctors`);
         const data = await res.json();
         if (data.success) {
           setDoctors(data.data);
@@ -38,14 +40,14 @@ export default function ConnectDoctorPage() {
     return ["All", ...Array.from(set)];
   }, [doctors]);
 
-  const filteredDoctors = selectedSpeciality === "All" 
-    ? doctors 
+  const filteredDoctors = selectedSpeciality === "All"
+    ? doctors
     : doctors.filter(d => d.speciality === selectedSpeciality);
 
   const handleBook = async () => {
     try {
       if (!selectedDoctor) return;
-      const res = await fetchWithTimeout("http://localhost:8000/api/doctors/connect", {
+      const res = await fetchWithTimeout(`${API_BASE}/api/doctors/connect`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ doctorId: selectedDoctor._id, amount: selectedDoctor.fee }),
@@ -73,10 +75,10 @@ export default function ConnectDoctorPage() {
                 <Stethoscope className="w-8 h-8 text-blue-500" />
                 Connect With a Doctor
               </h1>
-              
+
               <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
                 {specialities.map(spec => (
-                  <button 
+                  <button
                     key={spec}
                     onClick={() => setSelectedSpeciality(spec)}
                     className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition ${selectedSpeciality === spec ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
@@ -100,7 +102,7 @@ export default function ConnectDoctorPage() {
                       <p className="text-slate-500 text-sm mb-4">{doc.experience} Years Exp | {doc.hospital}</p>
                       <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
                         <span className="font-bold text-slate-800">₹{doc.fee}</span>
-                        <button 
+                        <button
                           onClick={() => { setSelectedDoctor(doc); setStep(2); }}
                           className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700"
                         >
@@ -117,7 +119,7 @@ export default function ConnectDoctorPage() {
           {step === 2 && selectedDoctor && (
             <div className="bg-white p-8 rounded-3xl shadow-sm border max-w-2xl mx-auto">
               <h2 className="text-2xl font-bold mb-6">Confirm Appointment</h2>
-              
+
               <div className="bg-slate-50 p-6 rounded-2xl mb-6">
                 <h3 className="font-bold text-xl">{selectedDoctor.name}</h3>
                 <p className="text-blue-600">{selectedDoctor.speciality}</p>
