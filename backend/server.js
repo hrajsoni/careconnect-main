@@ -58,10 +58,18 @@ app.use(
         process.env.FRONTEND_URL,
         "http://localhost:3000",
       ].filter(Boolean);
-      if (!origin || allowed.includes(origin)) {
+      
+      // Remove trailing slashes from allowed array for safer matching
+      const safeAllowed = allowed.map(url => url ? url.replace(/\/$/, '') : '');
+
+      if (
+        !origin || 
+        safeAllowed.includes(origin) || 
+        origin.endsWith(".vercel.app") 
+      ) {
         callback(null, true);
       } else {
-        callback(new Error("CORS not allowed"));
+        callback(new Error(`CORS not allowed for origin: ${origin}`));
       }
     },
     credentials: true,
